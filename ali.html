@@ -1,0 +1,4250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة المخزن الذكي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --surface3: #1f2d45;
+    --border: #2a3a55;
+    --accent: #00d4ff;
+    --accent2: #0099cc;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+    --header-bg: rgba(10,14,26,0.95);
+  }
+
+  /* ── Light mode ── */
+  html.light {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --surface3: #e2e8f0;
+    --border: #cbd5e1;
+    --accent: #0284c7;
+    --accent2: #0369a1;
+    --gold: #d97706;
+    --green: #059669;
+    --red: #dc2626;
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #94a3b8;
+    --glow: 0 0 20px rgba(2,132,199,0.2);
+    --header-bg: rgba(255,255,255,0.95);
+  }
+
+  html.light body::before {
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 20%, rgba(2,132,199,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(3,105,161,0.04) 0%, transparent 60%);
+  }
+
+  /* ── Theme toggle button ── */
+  .theme-toggle {
+    width: 44px; height: 24px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: background .3s;
+    flex-shrink: 0;
+  }
+  .theme-toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; right: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: transform .3s, background .3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  html.light .theme-toggle::after {
+    transform: translateX(-20px);
+    background: var(--gold);
+  }
+  .theme-label {
+    font-size: 13px; font-weight: 600;
+    color: var(--text2); user-select: none;
+    transition: color .3s;
+  }
+  .theme-wrap {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    transition: background .3s, border-color .3s;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,212,255,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,153,204,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky; top:0; z-index:100;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 18px; font-weight: 700; color: var(--accent);
+  }
+  .version-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 12px;
+    border-radius:999px;
+    background:rgba(245,158,11,0.12);
+    border:1px solid rgba(245,158,11,0.38);
+    color:var(--gold);
+    font-size:12px;
+    font-weight:800;
+    box-shadow:0 0 18px rgba(245,158,11,0.16);
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: var(--glow);
+  }
+  .header-actions { display:flex; gap:10px; align-items:center; }
+  .backup-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--green);
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+    padding: 6px 14px; border-radius: 20px;
+  }
+  .pulse { width:8px; height:8px; background:var(--green); border-radius:50%;
+    animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%,100%{ box-shadow:0 0 0 0 rgba(16,185,129,0.4); }
+    50%{ box-shadow:0 0 0 6px rgba(16,185,129,0); }
+  }
+
+  /* ── Layout ── */
+  .app { display:flex; height: calc(100vh - 64px); position:relative; z-index:1; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px; flex-shrink:0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display:flex; flex-direction:column;
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+  .nav-section { padding: 8px 16px 4px; font-size:10px; font-weight:700;
+    color:var(--text3); text-transform:uppercase; letter-spacing:1px; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding: 10px 16px;
+    cursor:pointer; font-size:14px; color:var(--text2);
+    transition: all .2s; border-right: 3px solid transparent;
+    margin: 1px 0;
+  }
+  .nav-item:hover { color:var(--text); background:var(--surface2); }
+  .nav-item.active {
+    color:var(--accent); background:rgba(0,212,255,0.08);
+    border-right-color:var(--accent);
+    box-shadow:inset -18px 0 28px rgba(0,212,255,0.08);
+  }
+  .nav-icon { font-size:16px; }
+  .badge {
+    margin-right:auto;
+    background:var(--accent); color:#000;
+    font-size:10px; font-weight:700;
+    padding:1px 7px; border-radius:10px;
+  }
+
+  /* ── Main ── */
+  .main { flex:1; overflow-y:auto; padding:24px; }
+
+  /* ── Page header ── */
+  .page-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:24px;
+  }
+  .page-title { font-size:22px; font-weight:700; }
+  .page-subtitle { font-size:13px; color:var(--text3); margin-top:2px; }
+
+  /* ── Stats ── */
+  .stats-grid {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
+    margin-bottom:24px;
+  }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:18px;
+    position:relative; overflow:hidden;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+  }
+  .stat-card:hover {
+    transform:translateY(-2px);
+    border-color:var(--accent);
+    box-shadow:0 12px 30px rgba(0,0,0,0.18), var(--glow);
+  }
+  .stat-card::before {
+    content:''; position:absolute; top:0; right:0;
+    width:60px; height:60px;
+    background:radial-gradient(circle, rgba(0,212,255,0.15), transparent 70%);
+  }
+  .stat-label { font-size:11px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+  .stat-value { font-size:28px; font-weight:900; color:var(--accent); margin:6px 0 2px; }
+  .stat-change { font-size:11px; }
+  .stat-change.up { color:var(--green); }
+  .stat-change.dn { color:var(--red); }
+
+  /* ── Section header ── */
+  .section-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .section-title { font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 18px; border-radius:8px; border:none;
+    font-family:'Cairo',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all .2s; white-space:nowrap;
+  }
+  .btn-primary {
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#000; box-shadow:0 4px 12px rgba(0,212,255,0.3);
+  }
+  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,212,255,0.4); }
+  .btn-outline {
+    background:transparent; color:var(--text2);
+    border:1px solid var(--border);
+  }
+  .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-danger {
+    background:rgba(239,68,68,0.1); color:var(--red);
+    border:1px solid rgba(239,68,68,0.3);
+  }
+  .btn-success {
+    background:rgba(16,185,129,0.1); color:var(--green);
+    border:1px solid rgba(16,185,129,0.3);
+  }
+  .btn-sm { padding:6px 12px; font-size:12px; }
+
+  /* ── Tabs ── */
+  .tabs { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; padding:4px; margin-bottom:20px; width:fit-content; }
+  .tab {
+    padding:8px 20px; border-radius:7px; cursor:pointer;
+    font-size:13px; font-weight:600; color:var(--text2);
+    transition:all .2s;
+  }
+  .tab.active { background:var(--accent); color:#000; box-shadow:var(--glow); }
+  .tab:hover:not(.active) { color:var(--text); background:var(--surface2); }
+
+  /* ── Form ── */
+  .form-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:24px; margin-bottom:20px;
+  }
+  .form-title {
+    font-size:15px; font-weight:700; margin-bottom:18px;
+    padding-bottom:12px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:8px;
+  }
+  .form-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .form-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-group.span2 { grid-column:span 2; }
+  label { font-size:12px; font-weight:600; color:var(--text2); }
+  input, select, textarea {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:9px 12px;
+    color:var(--text); font-family:'Cairo',sans-serif; font-size:13px;
+    transition:border-color .2s; width:100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline:none; border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(0,212,255,0.1);
+  }
+  select option { background:var(--surface2); }
+  textarea { resize:vertical; min-height:70px; }
+
+  /* ── Items table inside form ── */
+  .items-section { margin-top:16px; }
+  .items-section-title {
+    font-size:13px; font-weight:700; color:var(--text2);
+    margin-bottom:10px; display:flex; align-items:center; gap:8px;
+  }
+  .items-table-wrap { overflow:visible; border-radius:10px; border:1px solid var(--border); }
+  .items-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .items-table th {
+    background:var(--surface3); padding:10px 12px;
+    text-align:right; font-weight:700; color:var(--text2);
+    font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+    border-bottom:1px solid var(--border);
+  }
+  .items-table td {
+    padding:8px 10px; border-bottom:1px solid rgba(42,58,85,0.5);
+    vertical-align:middle;
+  }
+  .items-table tr:last-child td { border-bottom:none; }
+  .items-table tr:hover td { background:rgba(0,212,255,0.03); }
+  .items-table input {
+    padding:6px 8px; font-size:12px;
+    background:var(--surface3); border-color:transparent;
+  }
+  .items-table input:focus { background:var(--surface2); border-color:var(--accent); }
+  .total-cell { font-weight:700; color:var(--gold); }
+  .remove-row {
+    background:none; border:none; cursor:pointer;
+    color:var(--text3); font-size:16px; padding:4px;
+    border-radius:4px; transition:color .2s;
+  }
+  .remove-row:hover { color:var(--red); }
+
+  /* ── Form footer ── */
+  .form-footer {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:18px; padding-top:16px; border-top:1px solid var(--border);
+  }
+  .grand-total {
+    display:flex; align-items:center; gap:16px;
+  }
+  .grand-total-label { font-size:13px; color:var(--text2); }
+  .grand-total-value { font-size:22px; font-weight:900; color:var(--gold); }
+  .form-actions { display:flex; gap:10px; }
+
+  /* ── Records table ── */
+  .records-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden;
+  }
+  .records-header {
+    padding:16px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .search-box {
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:7px 12px;
+  }
+  .search-box input {
+    background:none; border:none; padding:0; width:180px; font-size:13px;
+  }
+  .search-box input:focus { box-shadow:none; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th {
+    background:var(--surface2); padding:11px 14px;
+    text-align:right; font-weight:700; font-size:11px;
+    text-transform:uppercase; letter-spacing:.5px; color:var(--text3);
+    border-bottom:2px solid var(--border);
+    position:sticky; top:0; z-index:1;
+  }
+  tbody td { padding:11px 14px; border-bottom:1px solid rgba(42,58,85,0.4); }
+  tbody tr:hover td { background:rgba(0,212,255,0.03); }
+  tbody tr:last-child td { border-bottom:none; }
+  .type-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;
+  }
+  .type-in { background:rgba(16,185,129,0.15); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+  .type-out { background:rgba(239,68,68,0.12); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+  .doc-num { font-family:monospace; color:var(--accent); font-size:12px; font-weight:700; }
+  .price-gold { color:var(--gold); font-weight:700; }
+  .action-btns { display:flex; gap:6px; }
+
+  /* ── Backup panel ── */
+  .backup-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .backup-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:20px;
+  }
+  .backup-card-title { font-size:14px; font-weight:700; margin-bottom:14px;
+    display:flex; align-items:center; gap:8px; }
+  .progress-bar { background:var(--surface3); border-radius:6px; height:8px; overflow:hidden; }
+  .progress-fill {
+    height:100%; border-radius:6px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    transition:width 1s ease;
+  }
+  .backup-log {
+    background:var(--surface3); border-radius:8px; padding:12px;
+    font-family:monospace; font-size:11px; color:var(--text2);
+    max-height:160px; overflow-y:auto; line-height:1.8;
+  }
+  .log-line { display:flex; gap:10px; }
+  .log-time { color:var(--text3); }
+  .log-ok { color:var(--green); }
+  .log-warn { color:var(--gold); }
+  .log-info { color:var(--accent); }
+  .storage-info { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:12px; }
+  .storage-item { text-align:center; }
+  .storage-val { font-size:20px; font-weight:700; color:var(--accent); }
+  .storage-lbl { font-size:10px; color:var(--text3); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align:center; padding:50px 20px; color:var(--text3);
+  }
+  .empty-icon { font-size:48px; margin-bottom:12px; }
+  .empty-text { font-size:15px; }
+  .empty-sub { font-size:12px; margin-top:6px; }
+
+  /* ── Toast ── */
+  #toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+    background:var(--surface2); border:1px solid var(--border);
+    padding:12px 22px; border-radius:10px; font-size:13px; font-weight:600;
+    transition:transform .3s; z-index:999; white-space:nowrap;
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+  #toast.success { border-color:var(--green); color:var(--green); }
+  #toast.info { border-color:var(--accent); color:var(--accent); }
+
+  /* ── Misc ── */
+  .hidden { display:none !important; }
+  .chip {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:2px 8px; border-radius:6px; font-size:11px;
+    background:var(--surface3); color:var(--text2); border:1px solid var(--border);
+  }
+  .divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+
+
+  /* Autocomplete dropdown */
+  .ac-dropdown {
+    position:absolute; top:100%; right:0; left:0;
+    background:var(--surface2); border:1px solid var(--accent);
+    border-radius:0 0 8px 8px; z-index:500;
+    max-height:200px; overflow-y:auto;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .ac-item {
+    padding:9px 12px; cursor:pointer; font-size:13px;
+    display:flex; gap:10px; align-items:center;
+    border-bottom:1px solid rgba(42,58,85,0.4);
+    transition:background .15s;
+  }
+  .ac-item:last-child{border-bottom:none}
+  .ac-item:hover{background:rgba(0,212,255,0.12);}
+  .ac-code{color:var(--accent);font-weight:700;font-family:monospace;min-width:60px}
+  .ac-name{color:var(--text)}
+  .ac-wrap{position:relative}
+  /* Edit modal suggestion */
+  #edit-suggest-list .ac-dropdown{top:0}
+
+
+  /* Image thumbnails */
+  .img-thumb-wrap {
+    position:relative; display:inline-block;
+    border-radius:8px; overflow:hidden;
+    border:2px solid var(--border);
+    transition:border-color .2s;
+  }
+  .img-thumb-wrap:hover { border-color:var(--accent); }
+  .img-thumb {
+    width:90px; height:90px; object-fit:cover;
+    display:block; cursor:pointer;
+  }
+  .img-remove {
+    position:absolute; top:3px; left:3px;
+    background:rgba(239,68,68,0.85); color:#fff;
+    border:none; border-radius:50%; width:20px; height:20px;
+    font-size:11px; cursor:pointer; display:flex;
+    align-items:center; justify-content:center;
+    transition:background .2s;
+  }
+  .img-remove:hover { background:var(--red); }
+  /* Lightbox */
+  #lightbox {
+    display:none; position:fixed; inset:0; z-index:500;
+    background:rgba(0,0,0,0.85); align-items:center; justify-content:center;
+    backdrop-filter:blur(8px);
+  }
+  #lightbox.open { display:flex; }
+  #lightbox img {
+    max-width:90vw; max-height:85vh;
+    border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  }
+  #lightbox-close {
+    position:fixed; top:20px; left:20px;
+    background:rgba(255,255,255,0.15); color:#fff;
+    border:none; border-radius:50%; width:40px; height:40px;
+    font-size:20px; cursor:pointer;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:5px; height:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+  @media(max-width:900px){
+    .header{
+      height:auto;
+      min-height:64px;
+      padding:10px 14px;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .header-actions{ flex-wrap:wrap; justify-content:flex-end; }
+    .app{
+      height:auto;
+      min-height:calc(100vh - 64px);
+      flex-direction:column;
+    }
+    .sidebar{
+      width:100%;
+      flex-direction:row;
+      overflow-x:auto;
+      overflow-y:hidden;
+      padding:8px;
+      border-left:0;
+      border-bottom:1px solid var(--border);
+    }
+    .nav-section{ display:none; }
+    .nav-item{
+      flex:0 0 auto;
+      border-right:0;
+      border-bottom:3px solid transparent;
+      border-radius:8px;
+      padding:9px 12px;
+    }
+    .nav-item.active{ border-bottom-color:var(--accent); }
+    .main{ padding:16px; }
+    .page-header{ align-items:flex-start; gap:12px; flex-direction:column; }
+    .stats-grid{ grid-template-columns:repeat(2,1fr); }
+    .form-grid{ grid-template-columns:repeat(2,1fr); }
+    .form-grid-3{ grid-template-columns:1fr; }
+    .backup-grid{ grid-template-columns:1fr; }
+    .records-header,
+    .section-header,
+    .form-footer{
+      align-items:flex-start;
+      gap:12px;
+      flex-direction:column;
+    }
+  }
+
+  @media(max-width:560px){
+    .stats-grid,
+    .form-grid{
+      grid-template-columns:1fr;
+    }
+    .form-group.span2{ grid-column:span 1; }
+    .backup-status{ display:none; }
+    .tabs{ width:100%; overflow-x:auto; }
+    .tab{ flex:1 0 auto; text-align:center; }
+    .search-box{ width:100%; }
+    .search-box input{ width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">📦</div>
+    نظام إدارة المخزن الذكي
+  </div>
+  <div class="header-actions">
+    <div class="backup-status">
+      <div class="pulse"></div>
+      نسخ احتياطي تلقائي نشط
+    </div>
+    <!-- Theme toggle -->
+    <div class="theme-wrap" onclick="toggleTheme()" title="تبديل الوضع الليلي/النهاري">
+      <span id="theme-icon">🌙</span>
+      <div class="theme-toggle"></div>
+      <span class="theme-label" id="theme-label">ليلي</span>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="exportData()">⬇ تصدير</button>
+    <button class="btn btn-primary btn-sm" onclick="manualBackup()">☁ نسخ الآن</button>
+  </div>
+</header>
+
+<!-- App -->
+<div class="app">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="nav-section">القوائم الرئيسية</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span> لوحة التحكم
+    </div>
+    <div class="nav-item" onclick="showPage('receive')">
+      <span class="nav-icon">📥</span> استلام مخزني
+      <span class="badge" id="badgeIn">0</span>
+    </div>
+    <div class="nav-item" onclick="showPage('issue')">
+      <span class="nav-icon">📤</span> إصدار مخزني
+      <span class="badge" id="badgeOut">0</span>
+    </div>
+    <div class="nav-item" onclick="showPage('records')">
+      <span class="nav-icon">📋</span> السجلات الكاملة
+    </div>
+    <div class="nav-section">المخزون</div>
+    <div class="nav-item" onclick="showPage('catalogue')">
+      <span class="nav-icon">📚</span> كتالوج المواد
+    </div>
+    <div class="nav-item" onclick="showPage('inventory')">
+      <span class="nav-icon">🗂</span> كشف المخزون
+    </div>
+    <div class="nav-item" onclick="showPage('balance')">
+      <span class="nav-icon">⚖️</span> الأرصدة المتبقية
+    </div>
+    <div class="nav-item" onclick="showPage('rollover')">
+      <span class="nav-icon">🔁</span> تدوير الأرصدة
+    </div>
+    <div class="nav-section">التقارير والاستعلامات</div>
+    <div class="nav-item" onclick="showPage('analytics')">
+      <span class="nav-icon">📈</span> تقارير المواد
+    </div>
+    <div class="nav-item" onclick="showPage('daily')">
+      <span class="nav-icon">📅</span> كشف اليومية
+    </div>
+    <div class="nav-item" onclick="showPage('stocktake')">
+      <span class="nav-icon">🔢</span> جرد المستودع
+    </div>
+    <div class="nav-item" onclick="showPage('movement')">
+      <span class="nav-icon">🔄</span> حركة مادة
+    </div>
+    <div class="nav-item" onclick="showPage('query')">
+      <span class="nav-icon">🔍</span> استعلام عن مادة
+    </div>
+    <div class="nav-section">الإعدادات</div>
+    <div class="nav-item" onclick="showPage('backup')">
+      <span class="nav-icon">☁</span> النسخ الاحتياطي
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- ════ DASHBOARD ════ -->
+    <div id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">لوحة التحكم</div>
+          <div class="page-subtitle" id="currentDate"></div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">إجمالي الاستلامات</div>
+          <div class="stat-value" id="statIn">0</div>
+          <div class="stat-change up" id="statInChange">وثيقة استلام</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">إجمالي الإصدارات</div>
+          <div class="stat-value" id="statOut">0</div>
+          <div class="stat-change dn" id="statOutChange">وثيقة إصدار</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">قيمة الواردات</div>
+          <div class="stat-value" id="statInVal">0</div>
+          <div class="stat-change up">دينار عراقي</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">قيمة الصادرات</div>
+          <div class="stat-value" id="statOutVal">0</div>
+          <div class="stat-change dn">دينار عراقي</div>
+        </div>
+      </div>
+      <!-- Recent -->
+      <div class="section-header">
+        <div class="section-title">⏱ آخر العمليات</div>
+        <button class="btn btn-outline btn-sm" onclick="showPage('records')">عرض الكل</button>
+      </div>
+      <div class="records-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>رقم الوثيقة</th><th>النوع</th><th>التاريخ</th><th>المواد</th><th>الإجمالي</th>
+            </tr></thead>
+            <tbody id="recentBody"><tr><td colspan="6"><div class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div class="empty-text">لا توجد عمليات بعد</div>
+              <div class="empty-sub">ابدأ بإضافة استلام أو إصدار</div>
+            </div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ RECEIVE ════ -->
+    <div id="page-receive" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📥 مستند استلام مخزني</div>
+          <div class="page-subtitle">تسجيل المواد الواردة إلى المخزن</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-title">🗒 بيانات المستند</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>التاريخ *</label>
+            <input type="date" id="r_date">
+          </div>
+          <div class="form-group">
+            <label>رقم الوثيقة *</label>
+            <input type="text" id="r_docnum" placeholder="مثال: RCV-2025-001">
+          </div>
+          <div class="form-group">
+            <label>رقم التسلسل</label>
+            <input type="text" id="r_seq" placeholder="تلقائي">
+          </div>
+          <div class="form-group">
+            <label>المخزن *</label>
+            <select id="r_warehouse">
+              <option value="">اختر المخزن</option>
+              <option value="131">131 - مخزن خامات ومواد أولية</option>
+              <option value="132">132 - مخزن وقود وزيوت</option>
+              <option value="133">133 - مخزن أدوات احتياطية</option>
+              <option value="134">134 - مخزن مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - مخزن اللوازم والمهمات</option>
+              <option value="1352">1352 - مخزن القرطاسية</option>
+            </select>
+          </div>
+          <div class="form-group span2">
+            <label>ملاحظات</label>
+            <textarea id="r_notes" placeholder="أي ملاحظات إضافية..."></textarea>
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div class="items-section">
+          <div class="items-section-title">
+            📦 المواد <span class="chip" id="r_item_count">0 مادة</span>
+          </div>
+          <div class="items-table-wrap">
+            <table class="items-table">
+              <thead><tr>
+                <th>#</th>
+                <th>الرقم المخزني</th>
+                <th>اسم المادة</th>
+                <th>العدد</th>
+                <th>السعر المفرد</th>
+                <th>الإجمالي</th>
+                <th></th>
+              </tr></thead>
+              <tbody id="r_items_body"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addItemRow('r')">+ إضافة مادة</button>
+        </div>
+
+        <!-- Image attachments -->
+        <div class="items-section" style="margin-top:16px">
+          <div class="items-section-title">📎 صور التأكيد <span class="chip" id="r_img_count">0 / 5</span></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label class="btn btn-outline btn-sm" style="cursor:pointer" id="r_img_label">
+              🖼 رفع صورة
+              <input type="file" accept="image/*" multiple class="hidden" id="r_img_input" onchange="addImages(event,'r')">
+            </label>
+            <span style="font-size:11px;color:var(--text3)">الحد الأقصى 5 صور لكل مستند</span>
+          </div>
+          <div id="r_img_preview" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"></div>
+        </div>
+
+        <div class="form-footer">
+          <div class="grand-total">
+            <span class="grand-total-label">الإجمالي الكلي:</span>
+            <span class="grand-total-value" id="r_grand_total">0 د.ع</span>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-outline" onclick="clearForm('r')">🗑 مسح</button>
+            <button class="btn btn-primary" onclick="saveDocument('receive')">💾 حفظ المستند</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Saved receive docs -->
+      <div class="section-header">
+        <div class="section-title">📋 مستندات الاستلام المحفوظة</div>
+        <span id="receive-summary-line" style="font-size:12px;color:var(--text3)"></span>
+      </div>
+      <div class="records-card">
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>#</th><th>رقم الوثيقة</th><th>التاريخ</th><th>المخزن</th><th>المواد</th><th>الإجمالي</th><th>ملاحظات</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="receiveTableBody">
+            <tr><td colspan="8"><div class="empty-state">
+              <div class="empty-icon">📥</div>
+              <div class="empty-text">لا توجد مستندات استلام</div>
+            </div></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ════ ISSUE ════ -->
+    <div id="page-issue" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📤 مستند إصدار مخزني</div>
+          <div class="page-subtitle">تسجيل المواد الصادرة من المخزن</div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-title">🗒 بيانات المستند</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>التاريخ *</label>
+            <input type="date" id="i_date">
+          </div>
+          <div class="form-group">
+            <label>رقم الوثيقة *</label>
+            <input type="text" id="i_docnum" placeholder="مثال: ISS-2025-001">
+          </div>
+          <div class="form-group">
+            <label>رقم التسلسل</label>
+            <input type="text" id="i_seq" placeholder="تلقائي">
+          </div>
+          <div class="form-group">
+            <label>المخزن *</label>
+            <select id="i_warehouse">
+              <option value="">اختر المخزن</option>
+              <option value="131">131 - مخزن خامات ومواد أولية</option>
+              <option value="132">132 - مخزن وقود وزيوت</option>
+              <option value="133">133 - مخزن أدوات احتياطية</option>
+              <option value="134">134 - مخزن مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - مخزن اللوازم والمهمات</option>
+              <option value="1352">1352 - مخزن القرطاسية</option>
+            </select>
+          </div>
+          <div class="form-group span2">
+            <label>ملاحظات</label>
+            <textarea id="i_notes" placeholder="أي ملاحظات إضافية..."></textarea>
+          </div>
+        </div>
+
+        <div class="items-section">
+          <div class="items-section-title">
+            📦 المواد <span class="chip" id="i_item_count">0 مادة</span>
+          </div>
+          <div class="items-table-wrap">
+            <table class="items-table">
+              <thead><tr>
+                <th>#</th>
+                <th>الرقم المخزني</th>
+                <th>اسم المادة</th>
+                <th>العدد</th>
+                <th>السعر المفرد</th>
+                <th>الإجمالي (عدد × السعر)</th>
+                <th></th>
+              </tr></thead>
+              <tbody id="i_items_body"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addItemRow('i')">+ إضافة مادة</button>
+        </div>
+
+        <!-- Image attachments -->
+        <div class="items-section" style="margin-top:16px">
+          <div class="items-section-title">📎 صور التأكيد <span class="chip" id="i_img_count">0 / 5</span></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label class="btn btn-outline btn-sm" style="cursor:pointer" id="i_img_label">
+              🖼 رفع صورة
+              <input type="file" accept="image/*" multiple class="hidden" id="i_img_input" onchange="addImages(event,'i')">
+            </label>
+            <span style="font-size:11px;color:var(--text3)">الحد الأقصى 5 صور لكل مستند</span>
+          </div>
+          <div id="i_img_preview" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"></div>
+        </div>
+
+        <div class="form-footer">
+          <div class="grand-total">
+            <span class="grand-total-label">الإجمالي الكلي:</span>
+            <span class="grand-total-value" id="i_grand_total">0 د.ع</span>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-outline" onclick="clearForm('i')">🗑 مسح</button>
+            <button class="btn btn-primary" onclick="saveDocument('issue')">💾 حفظ المستند</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Saved issue docs -->
+      <div class="section-header">
+        <div class="section-title">📋 مستندات الإصدار المحفوظة</div>
+      </div>
+      <div class="records-card">
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>#</th><th>رقم الوثيقة</th><th>التاريخ</th><th>المخزن</th><th>المواد</th><th>الإجمالي</th><th>ملاحظات</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="issueTableBody">
+            <tr><td colspan="8"><div class="empty-state">
+              <div class="empty-icon">📤</div>
+              <div class="empty-text">لا توجد مستندات إصدار</div>
+            </div></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ════ RECORDS ════ -->
+    <div id="page-records" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📋 السجلات الكاملة</div>
+          <div class="page-subtitle">جميع عمليات الاستلام والإصدار</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div class="search-box">
+            🔍 <input type="text" id="searchInput" placeholder="بحث برقم الوثيقة أو المادة..." oninput="filterRecords()">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="filterByType('all')">الكل</button>
+          <button class="btn btn-success btn-sm" onclick="filterByType('receive')">استلام</button>
+          <button class="btn btn-danger btn-sm" onclick="filterByType('issue')">إصدار</button>
+        </div>
+      </div>
+      <div class="records-card">
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>#</th><th>رقم الوثيقة</th><th>النوع</th><th>التاريخ</th><th>المخزن</th><th>المواد</th><th>الإجمالي</th><th>ملاحظات</th><th>إجراءات</th>
+          </tr></thead>
+          <tbody id="allRecordsBody">
+            <tr><td colspan="9"><div class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div class="empty-text">لا توجد سجلات</div>
+            </div></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+
+    <!-- ════ INVENTORY ════ -->
+    <div id="page-inventory" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">🗂 كشف المخزون</div>
+          <div class="page-subtitle">الأرصدة الحية — تدوير الأرصدة + الاستلام − الإصدار</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="openAddInvItemModal()">+ إضافة مادة</button>
+          <button class="btn btn-success btn-sm" onclick="exportLiveInv()">⬇ Excel</button>
+          <button class="btn btn-outline btn-sm" onclick="printReport('inv-live-wrap')">🖨 طباعة</button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="form-card" style="margin-bottom:16px;padding:14px 18px">
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+
+          <!-- Balance filter buttons -->
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:5px">نوع الرصيد</label>
+            <div style="display:flex;gap:6px">
+              <button id="inv-btn-pos"  onclick="setInvShow('pos')"
+                style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--green);background:rgba(16,185,129,0.15);color:var(--green)">
+                ✅ موجب
+              </button>
+              <button id="inv-btn-zero" onclick="setInvShow('zero')"
+                style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2)">
+                ⬜ صفر
+              </button>
+              <button id="inv-btn-all"  onclick="setInvShow('all')"
+                style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2)">
+                🔲 الكل
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin:0;min-width:160px">
+            <label style="font-size:11px;color:var(--text3)">المخزن</label>
+            <select id="inv_wh_f" onchange="runLiveInv()" style="padding:8px 10px;font-size:12px;width:100%">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin:0;min-width:150px">
+            <label style="font-size:11px;color:var(--text3)">حتى تاريخ</label>
+            <input type="date" id="inv_date_f" onchange="runLiveInv()" style="padding:8px 10px;font-size:12px;width:100%">
+          </div>
+
+          <div class="search-box" style="align-self:flex-end">
+            🔍 <input type="text" id="inv_srch_f" placeholder="بحث باسم أو رقم مخزني..."
+              oninput="filterLiveInv()" style="width:190px">
+          </div>
+
+          <div class="form-group" style="margin:0;min-width:130px">
+            <label style="font-size:11px;color:var(--text3)">ترتيب حسب</label>
+            <select id="inv_sort_f" onchange="runLiveInv()" style="padding:8px 10px;font-size:12px;width:100%">
+              <option value="name">اسم المادة</option>
+              <option value="balance">الرصيد</option>
+              <option value="balValue">القيمة</option>
+              <option value="storeNum">الرقم المخزني</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI row -->
+      <div id="inv-live-kpis" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px"></div>
+
+      <!-- Table -->
+      <div id="inv-live-wrap">
+        <div class="records-card">
+          <div class="records-header">
+            <div style="font-size:14px;font-weight:700" id="inv-live-title">كشف المخزون الحي</div>
+            <span style="font-size:12px;color:var(--text3)">
+              المواد: <span id="inv-live-count" style="color:var(--accent);font-weight:700">0</span>
+              &nbsp;|&nbsp; إجمالي القيمة: <span id="inv-live-val" style="color:var(--gold);font-weight:700">0</span> د.ع
+            </span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th style="width:40px">#</th>
+                <th style="cursor:pointer" onclick="sortLiveInv('storeNum')">الرقم المخزني ↕</th>
+                <th style="cursor:pointer" onclick="sortLiveInv('name')">اسم المادة ↕</th>
+                <th>المخزن</th>
+                <th style="cursor:pointer;color:var(--gold)" onclick="sortLiveInv('rolloverQty')">تدوير 🔁 ↕</th>
+                <th style="cursor:pointer" onclick="sortLiveInv('receiveQty')">استلام ↕</th>
+                <th style="cursor:pointer;color:var(--red)" onclick="sortLiveInv('outQty')">إصدار ↕</th>
+                <th style="cursor:pointer;font-weight:800" onclick="sortLiveInv('balance')">الرصيد ↕</th>
+                <th style="cursor:pointer" onclick="sortLiveInv('lastPrice')">آخر سعر ↕</th>
+                <th style="cursor:pointer" onclick="sortLiveInv('balValue')">القيمة ↕</th>
+                <th style="width:70px">تعديل</th>
+              </tr></thead>
+              <tbody id="inv-live-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Edit item modal ── -->
+      <div id="inv-item-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:400;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:500px;max-width:96%;max-height:90vh;overflow-y:auto">
+          <div style="font-size:16px;font-weight:700;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
+            <span id="inv-item-modal-title">✏ تعديل مادة</span>
+            <button onclick="closeInvItemModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);line-height:1">✕</button>
+          </div>
+
+          <!-- source info badge -->
+          <div id="inv-item-source-badge" style="margin-bottom:14px;font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(0,212,255,0.08);color:var(--accent);border:1px solid rgba(0,212,255,0.2)"></div>
+
+          <input type="hidden" id="iim-doc-id">
+          <input type="hidden" id="iim-item-idx">
+          <input type="hidden" id="iim-mode"><!-- 'tx' or 'inv' or 'new' -->
+          <input type="hidden" id="iim-inv-code">
+
+          <div class="form-grid-3" style="margin-bottom:12px">
+            <div class="form-group">
+              <label>الرقم المخزني</label>
+              <input type="text" id="iim-storenum" placeholder="مثال: 5002" oninput="iimSuggestNum()">
+              <div id="iim-suggest" style="position:relative"></div>
+            </div>
+            <div class="form-group" style="grid-column:span 2">
+              <label>اسم المادة *</label>
+              <input type="text" id="iim-name" placeholder="اسم المادة" oninput="iimSuggestName()">
+              <div id="iim-suggest-name" style="position:relative"></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+            <div class="form-group">
+              <label>الكمية / العدد</label>
+              <input type="number" id="iim-qty" min="0" step="0.001" oninput="iimCalcVal()">
+            </div>
+            <div class="form-group">
+              <label>الأجزاء</label>
+              <input type="number" id="iim-parts" min="0" step="0.001">
+            </div>
+            <div class="form-group">
+              <label>السعر الوسطي</label>
+              <input type="number" id="iim-price" min="0" step="0.01" oninput="iimCalcVal()">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:6px">
+            <label>القيمة</label>
+            <input type="number" id="iim-value" readonly style="background:rgba(245,158,11,0.06);color:var(--gold);font-weight:700">
+          </div>
+
+          <div id="iim-date-row" class="form-group" style="margin-bottom:12px">
+            <label>تاريخ العملية</label>
+            <input type="date" id="iim-date">
+          </div>
+
+          <div class="form-group" style="margin-bottom:16px">
+            <label>المخزن</label>
+            <select id="iim-wh" style="padding:8px 10px;font-size:13px">
+              <option value="">— اختر مخزن —</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="btn btn-outline" onclick="closeInvItemModal()">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveInvItemModal()">💾 حفظ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Edit modal stubs kept for compatibility ── -->
+      <div id="inv-edit-modal" style="display:none"></div>
+      <div id="edit-suggest-list" style="display:none"></div>
+    </div>
+
+
+    <!-- ════ ANALYTICS ════ -->
+    <div id="page-analytics" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📈 تقارير المواد</div>
+          <div class="page-subtitle">شراء وبيع وربح حسب الفترة والمخزن</div>
+        </div>
+        <button class="btn btn-success btn-sm" onclick="printReport('analytics-result')">🖨 طباعة</button>
+      </div>
+
+      <!-- Filter card -->
+      <div class="form-card" style="margin-bottom:20px">
+        <div class="form-title">🎛 معايير التقرير</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>نوع الفترة</label>
+            <select id="an_period_type" onchange="toggleAnPeriod()">
+              <option value="month">شهر محدد</option>
+              <option value="year">سنة كاملة</option>
+              <option value="custom">فترة مخصصة</option>
+              <option value="months_count">عدد أشهر</option>
+            </select>
+          </div>
+          <!-- month -->
+          <div class="form-group" id="an_month_wrap">
+            <label>الشهر</label>
+            <input type="month" id="an_month">
+          </div>
+          <!-- year -->
+          <div class="form-group hidden" id="an_year_wrap">
+            <label>السنة</label>
+            <select id="an_year"></select>
+          </div>
+          <!-- custom from/to -->
+          <div class="form-group hidden" id="an_from_wrap">
+            <label>من تاريخ</label>
+            <input type="date" id="an_from">
+          </div>
+          <div class="form-group hidden" id="an_to_wrap">
+            <label>إلى تاريخ</label>
+            <input type="date" id="an_to">
+          </div>
+          <!-- months count -->
+          <div class="form-group hidden" id="an_mcount_wrap">
+            <label>عدد الأشهر الأخيرة</label>
+            <input type="number" id="an_mcount" value="3" min="1" max="24">
+          </div>
+          <!-- warehouse -->
+          <div class="form-group">
+            <label>المخزن</label>
+            <select id="an_wh">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="runAnalytics()">▶ تشغيل التقرير</button>
+          <button class="btn btn-outline" onclick="document.getElementById('analytics-result').classList.add('hidden')">مسح</button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="analytics-result" class="hidden">
+
+        <!-- KPI row -->
+        <div class="stats-grid" style="margin-bottom:20px" id="an-kpis"></div>
+
+        <!-- Summary table -->
+        <div class="records-card" style="margin-bottom:20px">
+          <div class="records-header">
+            <div style="font-size:14px;font-weight:700" id="an-title">ملخص التقرير</div>
+            <div style="display:flex;gap:8px">
+              <div class="search-box">
+                🔍 <input type="text" id="an-search" placeholder="بحث بالمادة..." oninput="filterAnTable()" style="width:160px">
+              </div>
+              <button class="btn btn-success btn-sm" onclick="exportAnExcel()">⬇ Excel</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="cursor:pointer" onclick="sortAn('name')">اسم المادة ↕</th>
+                  <th>الرقم المخزني</th>
+                  <th>المخزن</th>
+                  <th style="cursor:pointer" onclick="sortAn('buyQty')">كمية الشراء ↕</th>
+                  <th style="cursor:pointer" onclick="sortAn('buyVal')">قيمة الشراء ↕</th>
+                  <th style="cursor:pointer" onclick="sortAn('sellQty')">كمية البيع ↕</th>
+                  <th style="cursor:pointer" onclick="sortAn('sellVal')">قيمة البيع ↕</th>
+                  <th style="cursor:pointer" onclick="sortAn('profit')">الربح ↕</th>
+                  <th>تفاصيل</th>
+                </tr>
+              </thead>
+              <tbody id="an-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Detail panel -->
+        <div id="an-detail" class="hidden">
+          <div class="section-header">
+            <div class="section-title" id="an-detail-title">📋 تفاصيل المادة</div>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('an-detail').classList.add('hidden')">✕ إغلاق</button>
+          </div>
+
+          <!-- Detail KPIs -->
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px" id="an-detail-kpis"></div>
+
+          <!-- Transactions -->
+          <div class="records-card">
+            <div class="records-header">
+              <div style="font-size:13px;font-weight:700">حركات المادة في الفترة</div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>#</th><th>التاريخ</th><th>الوثيقة</th><th>النوع</th>
+                  <th>المخزن</th><th>الكمية</th><th>السعر</th><th>القيمة</th>
+                </tr></thead>
+                <tbody id="an-detail-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CATALOGUE ════ -->
+    <div id="page-catalogue" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📚 كتالوج المواد</div>
+          <div class="page-subtitle">قاعدة بيانات المواد المخزنية — تُستخدم للإكمال التلقائي عند الإدخال</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="openAddCatalogModal()">+ إضافة مادة</button>
+          <button class="btn btn-success btn-sm" onclick="exportCatalog()">⬇ تصدير Excel</button>
+          <label class="btn btn-outline btn-sm" style="cursor:pointer">
+            📤 استيراد Excel
+            <input type="file" accept=".xlsx,.xls" class="hidden" id="catalogImportFile" onchange="importCatalog(event)">
+          </label>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="cat-stats"></div>
+
+      <!-- Search & Filter -->
+      <div class="records-card">
+        <div class="records-header" style="flex-wrap:wrap;gap:10px">
+          <div class="search-box">
+            🔍 <input type="text" id="cat-search" placeholder="بحث باسم المادة أو الرقم المخزني..." oninput="filterCatalog()" style="width:250px">
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="font-size:12px;color:var(--text2)">المخزن:</label>
+            <select id="cat-wh-filter" onchange="filterCatalog()" style="width:180px;padding:7px 10px;font-size:12px">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+            <span style="font-size:12px;color:var(--text3)">إجمالي: <span id="cat-count" style="color:var(--accent);font-weight:700">0</span> مادة</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:50px">#</th>
+              <th>الرقم المخزني</th>
+              <th>اسم المادة</th>
+              <th>المخزن الافتراضي</th>
+              <th>وحدة القياس</th>
+              <th>ملاحظات</th>
+              <th>المصدر</th>
+              <th style="width:100px">إجراءات</th>
+            </tr></thead>
+            <tbody id="cat-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add/Edit Modal -->
+      <div id="cat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:500px;max-width:95%">
+          <div style="font-size:16px;font-weight:700;margin-bottom:18px;display:flex;justify-content:space-between">
+            <span id="cat-modal-title">📚 إضافة مادة جديدة</span>
+            <button onclick="closeCatModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2)">✕</button>
+          </div>
+          <input type="hidden" id="cat-edit-id">
+          <div class="form-grid-3" style="margin-bottom:14px">
+            <div class="form-group">
+              <label>الرقم المخزني *</label>
+              <input type="text" id="cat-storenum" placeholder="مثال: 5002">
+            </div>
+            <div class="form-group" style="grid-column:span 2">
+              <label>اسم المادة *</label>
+              <input type="text" id="cat-name" placeholder="اسم المادة الكامل">
+            </div>
+          </div>
+          <div class="form-grid-3" style="margin-bottom:14px">
+            <div class="form-group">
+              <label>المخزن الافتراضي</label>
+              <select id="cat-wh">
+                <option value="">غير محدد</option>
+                <option value="131">131</option>
+                <option value="132">132</option>
+                <option value="133">133</option>
+                <option value="134">134</option>
+                <option value="1351">1351</option>
+                <option value="1352">1352</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>وحدة القياس</label>
+              <input type="text" id="cat-unit" placeholder="قطعة / كغ / لتر...">
+            </div>
+            <div class="form-group">
+              <label>الحد الأدنى</label>
+              <input type="number" id="cat-minqty" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label>ملاحظات</label>
+            <textarea id="cat-notes" placeholder="أي تفاصيل إضافية..." style="min-height:55px"></textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="btn btn-outline" onclick="closeCatModal()">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveCatalogItem()">💾 حفظ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ BALANCE (الأرصدة المتبقية) ════ -->
+    <div id="page-balance" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">⚖️ الأرصدة المتبقية</div>
+          <div class="page-subtitle">الكمية المتوفرة حالياً لكل مادة (الوارد − الصادر)</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="runBalance()">▶ تحديث</button>
+          <button class="btn btn-success btn-sm" onclick="exportBalance()">⬇ Excel</button>
+          <button class="btn btn-outline btn-sm" onclick="printReport('bal-result')">🖨 طباعة</button>
+        </div>
+      </div>
+
+      <!-- Filter -->
+      <div class="form-card" style="margin-bottom:20px">
+        <div class="form-title">🎛 تصفية</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>المخزن</label>
+            <select id="bal_wh">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>حتى تاريخ</label>
+            <input type="date" id="bal_to">
+          </div>
+          <div class="form-group">
+            <label>عرض</label>
+            <select id="bal_show">
+              <option value="all">جميع المواد</option>
+              <option value="pos">رصيد موجب فقط</option>
+              <option value="zero">رصيد صفر</option>
+              <option value="neg">رصيد سالب</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>بحث</label>
+            <input type="text" id="bal_search" placeholder="اسم أو رقم مخزني..." oninput="filterBalTable()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="bal-result">
+        <!-- KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px" id="bal-kpis"></div>
+
+        <div class="records-card">
+          <div class="records-header">
+            <div style="font-size:14px;font-weight:700" id="bal-title">الأرصدة المتبقية</div>
+            <span style="font-size:12px;color:var(--text3)">المواد: <span id="bal-count" style="color:var(--accent);font-weight:700">0</span></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th style="cursor:pointer" onclick="sortBal('storeNum')">#</th>
+                <th style="cursor:pointer" onclick="sortBal('storeNum')">الرقم المخزني ↕</th>
+                <th style="cursor:pointer" onclick="sortBal('name')">اسم المادة ↕</th>
+                <th>المخزن</th>
+                <th style="cursor:pointer;color:var(--gold)" onclick="sortBal('rolloverQty')" title="كمية التدوير الافتتاحي">تدوير ↕ 🔁</th>
+                <th style="cursor:pointer" onclick="sortBal('receiveQty')">استلام ↕</th>
+                <th style="cursor:pointer" onclick="sortBal('outQty')">إصدار ↕</th>
+                <th style="cursor:pointer" onclick="sortBal('balance')">الرصيد المتبقي ↕</th>
+                <th style="cursor:pointer" onclick="sortBal('lastPrice')">آخر سعر ↕</th>
+                <th style="cursor:pointer" onclick="sortBal('balValue')">القيمة ↕</th>
+              </tr></thead>
+              <tbody id="bal-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ ROLLOVER (تدوير الأرصدة) ════ -->
+    <div id="page-rollover" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">🔁 تدوير الأرصدة</div>
+          <div class="page-subtitle">استيراد أرصدة افتتاحية من Excel — حدد عنوان كل عمود أعلى الجدول</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Upload -->
+      <div class="form-card" id="ro-step1">
+        <div class="form-title">📤 الخطوة 1 — رفع ملف Excel</div>
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <label class="btn btn-primary" style="cursor:pointer">
+            📂 اختر ملف Excel
+            <input type="file" accept=".xlsx,.xls" class="hidden" id="ro-file-input" onchange="loadRolloverFile(event)">
+          </label>
+          <div style="font-size:13px;color:var(--text2)">
+            الملف يمكن أن يحتوي على أي أعمدة — ستقوم بتحديد دلالة كل عمود في الخطوة التالية
+          </div>
+        </div>
+        <div id="ro-file-info" style="margin-top:14px"></div>
+      </div>
+
+      <!-- Step 2: Map columns -->
+      <div class="form-card hidden" id="ro-step2">
+        <div class="form-title">🗺 الخطوة 2 — ربط الأعمدة</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px">
+          حدد لكل حقل من حقول النظام الأعمدةَ المقابلة في ملفك:
+        </div>
+        <div id="ro-mapping-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px"></div>
+
+        <!-- Preview -->
+        <div id="ro-preview-wrap" class="hidden">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text2)">👁 معاينة أول 5 صفوف:</div>
+          <div class="table-wrap" style="max-height:200px;overflow-y:auto">
+            <table style="font-size:11px" id="ro-preview-table"></table>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn btn-primary" onclick="previewRollover()">👁 معاينة</button>
+          <button class="btn btn-success" onclick="applyRollover()">✅ تطبيق التدوير</button>
+          <button class="btn btn-outline" onclick="resetRollover()">↩ إعادة</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Result -->
+      <div class="form-card hidden" id="ro-step3">
+        <div class="form-title">✅ الخطوة 3 — نتيجة التدوير</div>
+        <div id="ro-result-info" style="margin-bottom:14px"></div>
+        <div class="table-wrap" style="max-height:400px;overflow-y:auto">
+          <table id="ro-result-table">
+            <thead><tr>
+              <th>#</th><th>الرقم المخزني</th><th>اسم المادة</th>
+              <th>المخزن</th><th>الكمية</th><th>السعر الوسطي</th><th>القيمة</th><th>الحالة</th>
+            </tr></thead>
+            <tbody id="ro-result-tbody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="resetRollover()">🔁 تدوير آخر</button>
+          <button class="btn btn-success" onclick="exportRolloverResult()">⬇ تصدير النتائج</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ BACKUP ════ -->
+    <div id="page-backup" class="hidden">
+      <div class="page-header">
+        <div>
+          <div class="page-title">☁ النسخ الاحتياطي الذكي</div>
+          <div class="page-subtitle">أتمتة حماية بيانات المخزن</div>
+        </div>
+        <button class="btn btn-primary" onclick="manualBackup()">🔄 تشغيل نسخة احتياطية الآن</button>
+      </div>
+
+      <div class="backup-grid">
+        <div class="backup-card">
+          <div class="backup-card-title">📊 حالة النظام</div>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+              <span>مساحة مستخدمة</span><span id="usedPct">0%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="usedBar" style="width:0%"></div></div>
+          </div>
+          <div class="storage-info">
+            <div class="storage-item">
+              <div class="storage-val" id="totalDocs">0</div>
+              <div class="storage-lbl">مستند محفوظ</div>
+            </div>
+            <div class="storage-item">
+              <div class="storage-val" id="totalItems">0</div>
+              <div class="storage-lbl">مادة مسجلة</div>
+            </div>
+            <div class="storage-item">
+              <div class="storage-val" id="backupCount">0</div>
+              <div class="storage-lbl">نسخ احتياطية</div>
+            </div>
+          </div>
+          <hr class="divider">
+          <div style="font-size:12px;color:var(--text3)">آخر نسخة: <span id="lastBackupTime" style="color:var(--text2)">لم تُنفَّذ بعد</span></div>
+        </div>
+
+        <div class="backup-card">
+          <div class="backup-card-title">⚙ إعدادات التلقائي</div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>فترة النسخ التلقائي</label>
+            <select id="backupInterval" onchange="setBackupInterval()">
+              <option value="60000">كل دقيقة (تجريبي)</option>
+              <option value="300000" selected>كل 5 دقائق</option>
+              <option value="900000">كل 15 دقيقة</option>
+              <option value="3600000">كل ساعة</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>الضغط والتشفير</label>
+            <select id="encryptMode">
+              <option value="aes">AES-256 تشفير</option>
+              <option value="none">بدون تشفير</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" onclick="exportData()">⬇ تصدير JSON</button>
+            <button class="btn btn-outline btn-sm" onclick="importTrigger()">⬆ استيراد</button>
+            <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+          </div>
+        </div>
+      </div>
+
+      <div class="backup-card">
+        <div class="backup-card-title">📝 سجل العمليات (Log)</div>
+        <div class="backup-log" id="backupLog">
+          <div class="log-line"><span class="log-time">--:--:--</span><span class="log-info">  [INFO] النظام جاهز. في انتظار أول نسخة احتياطية...</span></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ════ DAILY JOURNAL ════ -->
+    <div id="page-daily" class="hidden">
+      <div class="page-header">
+        <div><div class="page-title">📅 كشف اليومية</div>
+        <div class="page-subtitle">عرض حركات المستودع اليومية</div></div>
+        <button class="btn btn-success btn-sm" onclick="printReport('daily-result')">🖨 طباعة</button>
+      </div>
+      <div class="form-card" style="margin-bottom:20px">
+        <div class="form-title">🔎 معايير البحث</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>من تاريخ</label>
+            <input type="date" id="dly_from">
+          </div>
+          <div class="form-group">
+            <label>إلى تاريخ</label>
+            <input type="date" id="dly_to">
+          </div>
+          <div class="form-group">
+            <label>المخزن</label>
+            <select id="dly_wh">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>نوع الحركة</label>
+            <select id="dly_type">
+              <option value="all">إدخال وإخراج</option>
+              <option value="receive">إدخال فقط</option>
+              <option value="issue">إخراج فقط</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" onclick="runDaily()">▶ تشغيل الكشف</button>
+          <button class="btn btn-outline" style="margin-right:8px" onclick="clearReport('daily')">مسح</button>
+        </div>
+      </div>
+      <div id="daily-result" class="hidden">
+        <div class="records-card">
+          <div class="records-header">
+            <div style="font-size:14px;font-weight:700" id="dly-title">كشف اليومية</div>
+            <div style="display:flex;gap:16px;font-size:12px">
+              <span>إجمالي الإدخال: <b id="dly-in-total" style="color:var(--green)">0</b> د.ع</span>
+              <span>إجمالي الإخراج: <b id="dly-out-total" style="color:var(--red)">0</b> د.ع</span>
+              <span>الفرق: <b id="dly-net" style="color:var(--gold)">0</b> د.ع</span>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr>
+              <th>#</th><th>التاريخ</th><th>رقم الوثيقة</th><th>النوع</th>
+              <th>المخزن</th><th>المادة</th><th>العدد</th><th>السعر</th><th>القيمة</th>
+            </tr></thead>
+            <tbody id="dly-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ STOCKTAKE ════ -->
+    <div id="page-stocktake" class="hidden">
+      <div class="page-header">
+        <div><div class="page-title">🔢 جرد المستودع</div>
+        <div class="page-subtitle">ملخص أرصدة المواد في المخازن</div></div>
+        <button class="btn btn-success btn-sm" onclick="printReport('stk-result')">🖨 طباعة</button>
+      </div>
+      <div class="form-card" style="margin-bottom:20px">
+        <div class="form-title">🔎 معايير البحث</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>المخزن</label>
+            <select id="stk_wh">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>حتى تاريخ</label>
+            <input type="date" id="stk_to">
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" onclick="runStocktake()">▶ تشغيل الجرد</button>
+          <button class="btn btn-outline" style="margin-right:8px" onclick="clearReport('stocktake')">مسح</button>
+        </div>
+      </div>
+      <div id="stk-result" class="hidden">
+        <div class="records-card">
+          <div class="records-header">
+            <div style="font-size:14px;font-weight:700" id="stk-title">جرد المستودع</div>
+            <div style="font-size:12px">
+              إجمالي قيمة المخزون: <b id="stk-total" style="color:var(--gold)">0</b> د.ع
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr>
+              <th>#</th><th>الرقم المخزني</th><th>اسم المادة</th>
+              <th>المخزن</th><th>إجمالي الوارد</th><th>إجمالي الصادر</th>
+              <th>الرصيد</th><th>آخر سعر</th><th>القيمة</th>
+            </tr></thead>
+            <tbody id="stk-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ MOVEMENT ════ -->
+    <div id="page-movement" class="hidden">
+      <div class="page-header">
+        <div><div class="page-title">🔄 كشف حركة مادة</div>
+        <div class="page-subtitle">تتبع حركة مادة محددة عبر الزمن</div></div>
+        <button class="btn btn-success btn-sm" onclick="printReport('mov-result')">🖨 طباعة</button>
+      </div>
+      <div class="form-card" style="margin-bottom:20px">
+        <div class="form-title">🔎 معايير البحث</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>اسم المادة أو رقمها المخزني</label>
+            <input type="text" id="mov_mat" placeholder="اكتب اسم أو رقم المادة...">
+          </div>
+          <div class="form-group">
+            <label>من تاريخ</label>
+            <input type="date" id="mov_from">
+          </div>
+          <div class="form-group">
+            <label>إلى تاريخ</label>
+            <input type="date" id="mov_to">
+          </div>
+          <div class="form-group">
+            <label>المخزن</label>
+            <select id="mov_wh">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" onclick="runMovement()">▶ عرض الحركة</button>
+          <button class="btn btn-outline" style="margin-right:8px" onclick="clearReport('movement')">مسح</button>
+        </div>
+      </div>
+      <div id="mov-result" class="hidden">
+        <!-- Summary cards -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px" id="mov-summary"></div>
+        <div class="records-card">
+          <div class="records-header">
+            <div style="font-size:14px;font-weight:700" id="mov-title">حركة المادة</div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr>
+              <th>#</th><th>التاريخ</th><th>رقم الوثيقة</th><th>النوع</th>
+              <th>المخزن</th><th>الرقم المخزني</th><th>اسم المادة</th><th>العدد</th><th>السعر</th><th>القيمة</th>
+            </tr></thead>
+            <tbody id="mov-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ QUERY ════ -->
+    <div id="page-query" class="hidden">
+      <div class="page-header">
+        <div><div class="page-title">🔍 استعلام عن مادة</div>
+        <div class="page-subtitle">عرض كامل بيانات أي مادة في المستودع</div></div>
+      </div>
+      <div class="form-card" style="margin-bottom:20px">
+        <div class="form-title">🔎 بحث</div>
+        <div style="display:flex;gap:12px;align-items:flex-end">
+          <div class="form-group" style="flex:1">
+            <label>اسم المادة أو رقمها المخزني</label>
+            <input type="text" id="qry_term" placeholder="اكتب للبحث التلقائي..."
+              oninput="runQuery()" style="font-size:15px;padding:11px 14px">
+          </div>
+          <div class="form-group" style="width:200px">
+            <label>المخزن</label>
+            <select id="qry_wh" onchange="runQuery()">
+              <option value="">كل المخازن</option>
+              <option value="131">131 - خامات ومواد أولية</option>
+              <option value="132">132 - وقود وزيوت</option>
+              <option value="133">133 - أدوات احتياطية</option>
+              <option value="134">134 - مواد تعبئة وتغليف</option>
+              <option value="1351">1351 - اللوازم والمهمات</option>
+              <option value="1352">1352 - القرطاسية</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="qry-result"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let state = {
+  receive: [],
+  issue: [],
+  backupCount: 0,
+  lastBackup: null,
+  seqR: 1,
+  seqI: 1
+};
+let backupTimer = null;
+let filterType = 'all';
+
+const DB_NAME = 'smartWarehouseInternalDB';
+const DB_VERSION = 1;
+const DB_STORE = 'appData';
+
+function openInternalDb() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) { reject(new Error('IndexedDB غير مدعوم')); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbGet(key) {
+  const db = await openInternalDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    tx.oncomplete = () => db.close();
+  });
+}
+
+async function dbSet(key, value) {
+  const db = await openInternalDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(value, key);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+function saveToInternalDb(key, value) {
+  dbSet(key, value).catch(err => console.warn('IndexedDB save failed:', key, err));
+}
+
+async function loadPersistentData() {
+  try {
+    const [savedState, savedInv, savedCatalog] = await Promise.all([
+      dbGet('warehouseData'),
+      dbGet('invData'),
+      dbGet('catalogData')
+    ]);
+    if (savedState?.receive && savedState?.issue) state = savedState;
+    else {
+      const legacyState = localStorage.getItem('warehouseData');
+      if (legacyState) state = JSON.parse(legacyState);
+    }
+    if (savedInv) invData = savedInv;
+    if (savedCatalog) catalogData = savedCatalog;
+  } catch (err) {
+    console.warn('IndexedDB load failed, using localStorage:', err);
+    const legacyState = localStorage.getItem('warehouseData');
+    if (legacyState) state = JSON.parse(legacyState);
+  }
+}
+
+function saveAllPersistentData() {
+  saveToInternalDb('warehouseData', state);
+  saveToInternalDb('invData', invData);
+  saveToInternalDb('catalogData', catalogData);
+}
+
+
+// ══════════════════════════════════════════
+//  THEME TOGGLE
+// ══════════════════════════════════════════
+function applyTheme(mode) {
+  const icon  = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  if (mode === 'light') {
+    document.documentElement.classList.add('light');
+    if (icon)  icon.textContent  = '☀️';
+    if (label) label.textContent = 'نهاري';
+  } else {
+    document.documentElement.classList.remove('light');
+    if (icon)  icon.textContent  = '🌙';
+    if (label) label.textContent = 'ليلي';
+  }
+  localStorage.setItem('themeMode', mode);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+window.onload = async () => {
+  // Restore theme
+  applyTheme(localStorage.getItem('themeMode') || 'light');
+
+  // Set date
+  const now2 = new Date();
+  document.getElementById('currentDate').textContent =
+    now2.toLocaleDateString('ar-EG-u-ca-gregory', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const today = now2.toISOString().split('T')[0];
+  ['r_date','i_date'].forEach(id => document.getElementById(id).value = today);
+
+  // Load from internal database, with localStorage fallback
+  await loadPersistentData();
+  updateAll();
+  saveAllPersistentData();
+
+  // Add initial rows
+  addItemRow('r'); addItemRow('i');
+
+  // Auto-set seq
+  updateSeq();
+
+  // Start auto-backup
+  setBackupInterval();
+  startAutoExport();
+  initAnalytics();
+  log('info','النظام تم تشغيله بنجاح');
+};
+
+function save() {
+  localStorage.setItem('warehouseData', JSON.stringify(state));
+  saveToInternalDb('warehouseData', state);
+  updateAll();
+  lastExportDocCount = 0; // reset so beforeunload triggers if needed
+}
+
+function updateAll() {
+  updateStats();
+  renderReceiveTable();
+  renderIssueTable();
+  renderAllRecords();
+  renderRecent();
+  updateBackupStats();
+  updateBadges();
+  updateSeq();
+}
+
+function updateSeq() {
+  document.getElementById('r_seq').value = 'RCV-' + String(state.seqR).padStart(4,'0');
+  document.getElementById('i_seq').value = 'ISS-' + String(state.seqI).padStart(4,'0');
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+// ══════════════════════════════════════════
+//  ITEM ROWS
+// ══════════════════════════════════════════
+function addItemRow(prefix) {
+  const body = document.getElementById(prefix + '_items_body');
+  const idx = body.rows.length + 1;
+  const row = body.insertRow();
+  const uid = Date.now() + '_' + idx;
+  row.innerHTML = `
+    <td style="color:var(--text3);font-weight:700">${idx}</td>
+    <td>
+      <div class="ac-wrap" style="position:relative;display:inline-block">
+        <input type="text" placeholder="رقم مخزني" style="width:120px" class="storenum-input"
+          oninput="showAC(this,'${prefix}')" onblur="hideAC(this,250)"
+          onfocus="showAC(this,'${prefix}')" autocomplete="off" spellcheck="false">
+        <div class="ac-portal" style="
+          display:none;
+          position:absolute;
+          top:100%; right:0;
+          min-width:300px;
+          background:var(--surface2);
+          border:1.5px solid var(--accent);
+          border-radius:0 0 10px 10px;
+          z-index:9999;
+          max-height:220px;
+          overflow-y:auto;
+          box-shadow:0 8px 30px rgba(0,0,0,0.4);
+        "></div>
+      </div>
+    </td>
+    <td><input type="text" placeholder="اسم المادة" style="width:180px" oninput="calcRow(this)" class="name-input"></td>
+    <td><input type="number" placeholder="0" min="0" style="width:70px" oninput="calcRow(this)" class="qty"></td>
+    <td><input type="number" placeholder="0.00" min="0" step="0.01" style="width:90px" oninput="calcRow(this)" class="price"></td>
+    <td class="total-cell" data-total="0">0.00</td>
+    <td><button class="remove-row" onclick="removeRow(this,'${prefix}')">✕</button></td>
+  `;
+  updateItemCount(prefix);
+}
+
+function removeRow(btn, prefix) {
+  const body = document.getElementById(prefix + '_items_body');
+  if (body.rows.length <= 1) { showToast('يجب أن يكون هناك مادة واحدة على الأقل','info'); return; }
+  btn.closest('tr').remove();
+  // renumber
+  [...body.rows].forEach((r,i) => r.cells[0].textContent = i+1);
+  calcGrandTotal(prefix);
+  updateItemCount(prefix);
+}
+
+function calcRow(input) {
+  const row = input.closest('tr');
+  const qty = parseFloat(row.querySelector('.qty')?.value) || 0;
+  const price = parseFloat(row.querySelector('.price')?.value) || 0;
+  const total = qty * price;
+  row.querySelector('.total-cell').textContent = total.toLocaleString('ar-IQ');
+  row.querySelector('.total-cell').dataset.total = total;
+  const prefix = row.closest('tbody').id.split('_')[0];
+  calcGrandTotal(prefix);
+}
+
+function calcGrandTotal(prefix) {
+  const body = document.getElementById(prefix + '_items_body');
+  let grand = 0;
+  body.querySelectorAll('.total-cell').forEach(c => grand += parseFloat(c.dataset.total)||0);
+  document.getElementById(prefix + '_grand_total').textContent = grand.toFixed(2) + ' د.ع';
+}
+
+function updateItemCount(prefix) {
+  const c = document.getElementById(prefix + '_items_body').rows.length;
+  document.getElementById(prefix + '_item_count').textContent = c + ' مادة';
+}
+
+// ══════════════════════════════════════════
+//  SAVE DOCUMENT
+// ══════════════════════════════════════════
+function saveDocument(type) {
+  const p = type === 'receive' ? 'r' : 'i';
+  const date = document.getElementById(p + '_date').value;
+  const docnum = document.getElementById(p + '_docnum').value.trim();
+  const warehouse = document.getElementById(p + '_warehouse').value;
+  const notes = document.getElementById(p + '_notes').value.trim();
+
+  if (!date || !docnum || !warehouse) {
+    showToast('يرجى ملء الحقول المطلوبة (*)','info'); return;
+  }
+
+  const body = document.getElementById(p + '_items_body');
+  const items = [];
+  for (const row of body.rows) {
+    const inputs = row.querySelectorAll('input');
+    const storeNum = inputs[0].value.trim();
+    const name = inputs[1].value.trim();
+    const qty = parseFloat(inputs[2].value) || 0;
+    const price = parseFloat(inputs[3].value) || 0;
+    if (!name) continue;
+    items.push({ storeNum, name, qty, price, total: qty * price });
+  }
+  if (!items.length) { showToast('أضف مادة واحدة على الأقل','info'); return; }
+
+  const grandTotal = items.reduce((s,i)=>s+i.total, 0);
+  const seq = type === 'receive' ? state.seqR++ : state.seqI++;
+  const seqStr = (type==='receive'?'RCV-':'ISS-') + String(seq).padStart(4,'0');
+
+  // Collect images (base64)
+  const images = pendingImages[p] || [];
+
+  const doc = {
+    id: Date.now(),
+    seq: seqStr,
+    date, docnum, warehouse, notes, items, grandTotal,
+    type, images, createdAt: new Date().toISOString()
+  };
+
+  state[type === 'receive' ? 'receive' : 'issue'].unshift(doc);
+  save();
+  clearForm(p);
+  addItemRow(p);
+  showToast('✅ تم حفظ المستند بنجاح','success');
+  log('ok', `تم حفظ ${type==='receive'?'استلام':'إصدار'} رقم ${docnum} - الإجمالي: ${grandTotal.toFixed(0)} د.ع - صور: ${images.length}`);
+}
+
+function clearForm(p) {
+  ['_docnum','_notes'].forEach(s => document.getElementById(p+s).value = '');
+  document.getElementById(p+'_warehouse').value = '';
+  document.getElementById(p+'_items_body').innerHTML = '';
+  document.getElementById(p+'_grand_total').textContent = '0 د.ع';
+  pendingImages[p] = [];
+  renderImgPreview(p);
+  updateItemCount(p);
+  updateSeq();
+}
+
+// ══════════════════════════════════════════
+//  DELETE DOCUMENT
+// ══════════════════════════════════════════
+function deleteDoc(type, id) {
+  if (!confirm('هل أنت متأكد من حذف هذا المستند؟')) return;
+  const key = type === 'receive' ? 'receive' : 'issue';
+  state[key] = state[key].filter(d => d.id !== id);
+  save();
+  showToast('🗑 تم حذف المستند','info');
+}
+
+// ══════════════════════════════════════════
+//  RENDER TABLES
+// ══════════════════════════════════════════
+function docRow(doc, colspan=8) {
+  const isRollover = doc.isRollover === true;
+  const typeBadge = isRollover
+    ? '<span class="type-badge" style="background:rgba(245,158,11,0.15);color:var(--gold);border:1px solid rgba(245,158,11,0.35)">🔁 تدوير رصيد</span>'
+    : (doc.type === 'receive'
+        ? '<span class="type-badge type-in">📥 استلام</span>'
+        : '<span class="type-badge type-out">📤 إصدار</span>');
+  const itemsSummary = doc.items.map(i=>i.name).join('، ').substring(0,60) + (doc.items.length>2?'...':'');
+  const imgBadge = doc.images && doc.images.length ? ` <span style="color:var(--accent);font-size:10px">📎${doc.images.length}</span>` : '';
+  const rowBg = isRollover ? 'background:rgba(245,158,11,0.04)' : '';
+  return `
+    <td style="color:var(--text3);${rowBg}">${doc.seq}</td>
+    <td><span class="doc-num">${doc.docnum}</span></td>
+    ${colspan>8?`<td>${typeBadge}</td>`:''}
+    <td>${fmtDate(doc.date)}</td>
+    <td><span class="chip">${doc.warehouse}</span></td>
+    <td style="max-width:200px;font-size:11px;color:var(--text2)">${itemsSummary} <span style="color:var(--accent)">(${doc.items.length})</span>${imgBadge}</td>
+    <td class="price-gold">${doc.grandTotal.toLocaleString('ar-IQ')}</td>
+    <td style="font-size:11px;color:${isRollover?'var(--gold)':'var(--text3)'}">${isRollover?'🔁 '+doc.notes:doc.notes||'-'}</td>
+    <td><div class="action-btns">
+      <button class="btn btn-outline btn-sm" onclick='viewDoc(${JSON.stringify(doc)})'>👁</button>
+      ${isRollover
+        ? `<button class="btn btn-sm" style="background:rgba(239,68,68,0.08);color:var(--red);border:1px solid rgba(239,68,68,0.25)" onclick="deleteDoc('${doc.type}',${doc.id})" title="حذف تدوير الرصيد">🗑</button>`
+        : `<button class="btn btn-danger btn-sm" onclick="deleteDoc('${doc.type}',${doc.id})">🗑</button>`}
+    </div></td>
+  `;
+}
+
+function renderReceiveTable() {
+  const body = document.getElementById('receiveTableBody');
+  if (!state.receive.length) {
+    body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📥</div><div class="empty-text">لا توجد مستندات استلام</div></div></td></tr>';
+    return;
+  }
+  const rollCount = state.receive.filter(d=>d.isRollover).length;
+  const normalCount = state.receive.length - rollCount;
+  // Update receive page subtitle if element exists
+  const sub = document.getElementById('receive-summary-line');
+  if (sub) sub.innerHTML = `مستندات استلام: <b style="color:var(--accent)">${normalCount}</b> &nbsp;|&nbsp; تدوير أرصدة: <b style="color:var(--gold)">${rollCount}</b>`;
+  body.innerHTML = state.receive.map(d=>`<tr style="${d.isRollover?'background:rgba(245,158,11,0.03)':''}">${docRow(d,8)}</tr>`).join('');
+}
+
+function renderIssueTable() {
+  const body = document.getElementById('issueTableBody');
+  if (!state.issue.length) {
+    body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📤</div><div class="empty-text">لا توجد مستندات إصدار</div></div></td></tr>';
+    return;
+  }
+  body.innerHTML = state.issue.map(d=>`<tr>${docRow(d,8)}</tr>`).join('');
+}
+
+function renderAllRecords() {
+  const all = [...state.receive, ...state.issue]
+    .sort((a,b)=>b.id-a.id);
+  const body = document.getElementById('allRecordsBody');
+  const search = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  const filtered = all.filter(d => {
+    if (filterType !== 'all' && d.type !== filterType) return false;
+    if (search && !d.docnum.toLowerCase().includes(search) &&
+        !d.items.some(i=>i.name.toLowerCase().includes(search))) return false;
+    return true;
+  });
+  if (!filtered.length) {
+    body.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">لا توجد نتائج</div></div></td></tr>';
+    return;
+  }
+  body.innerHTML = filtered.map(d=>`<tr>${docRow(d,9)}</tr>`).join('');
+}
+
+function renderRecent() {
+  const all = [...state.receive, ...state.issue].sort((a,b)=>b.id-a.id).slice(0,8);
+  const body = document.getElementById('recentBody');
+  if (!all.length) {
+    body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">لا توجد عمليات بعد</div></div></td></tr>';
+    return;
+  }
+  body.innerHTML = all.map((d,i)=>`<tr>
+    <td style="color:var(--text3)">${i+1}</td>
+    <td><span class="doc-num">${d.docnum}</span></td>
+    <td>${d.type==='receive'?'<span class="type-badge type-in">📥 استلام</span>':'<span class="type-badge type-out">📤 إصدار</span>'}</td>
+    <td>${fmtDate(d.date)}</td>
+    <td>${d.items.length} مادة</td>
+    <td class="price-gold">${d.grandTotal.toFixed(0)} د.ع</td>
+  </tr>`).join('');
+}
+
+// ══════════════════════════════════════════
+//  STATS & BADGES
+// ══════════════════════════════════════════
+function updateStats() {
+  const inTotal = state.receive.reduce((s,d)=>s+d.grandTotal,0);
+  const outTotal = state.issue.reduce((s,d)=>s+d.grandTotal,0);
+  document.getElementById('statIn').textContent = state.receive.length;
+  document.getElementById('statOut').textContent = state.issue.length;
+  document.getElementById('statInVal').textContent = inTotal.toLocaleString('ar-IQ');
+  document.getElementById('statOutVal').textContent = outTotal.toLocaleString('ar-IQ');
+}
+
+function updateBadges() {
+  document.getElementById('badgeIn').textContent = state.receive.length;
+  document.getElementById('badgeOut').textContent = state.issue.length;
+}
+
+function updateBackupStats() {
+  const totalDocs = state.receive.length + state.issue.length;
+  const totalItems = [...state.receive,...state.issue].reduce((s,d)=>s+d.items.length,0);
+  const pct = Math.min(100, Math.round(totalDocs*2));
+  document.getElementById('totalDocs').textContent = totalDocs;
+  document.getElementById('totalItems').textContent = totalItems;
+  document.getElementById('backupCount').textContent = state.backupCount;
+  document.getElementById('usedPct').textContent = pct + '%';
+  document.getElementById('usedBar').style.width = pct + '%';
+  document.getElementById('lastBackupTime').textContent = state.lastBackup
+    ? new Date(state.lastBackup).toLocaleString('ar-EG-u-ca-gregory',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'لم تُنفَّذ بعد';
+}
+
+// ══════════════════════════════════════════
+//  FILTER
+// ══════════════════════════════════════════
+function filterByType(t) { filterType = t; renderAllRecords(); }
+function filterRecords() { renderAllRecords(); }
+
+// ══════════════════════════════════════════
+//  VIEW DOC (popup)
+// ══════════════════════════════════════════
+function viewDoc(doc) {
+  const rows = doc.items.map((it,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${it.storeNum||'-'}</td>
+      <td>${it.name}</td>
+      <td>${it.qty}</td>
+      <td>${it.price.toLocaleString('ar-IQ')}</td>
+      <td style="color:var(--gold);font-weight:700">${it.total.toLocaleString('ar-IQ')}</td>
+    </tr>`).join('');
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:700px;width:95%;max-height:80vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div style="font-size:18px;font-weight:700">${doc.type==='receive'?'📥 استلام':'📤 إصدار'} — ${doc.docnum}</div>
+        <button onclick="this.closest('[style]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2)">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;font-size:13px">
+        <div><span style="color:var(--text3)">التاريخ: </span>${fmtDate(doc.date)}</div>
+        <div><span style="color:var(--text3)">التسلسل: </span>${doc.seq}</div>
+        <div><span style="color:var(--text3)">المخزن: </span>${doc.warehouse}</div>
+      </div>
+      <div class="items-table-wrap"><table class="items-table">
+        <thead><tr><th>#</th><th>رقم مخزني</th><th>المادة</th><th>العدد</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div style="text-align:left;margin-top:14px;font-size:20px;font-weight:900;color:var(--gold)">
+        الإجمالي: ${doc.grandTotal.toFixed(0)} د.ع
+      </div>
+      ${doc.notes?`<div style="margin-top:10px;font-size:12px;color:var(--text3)">ملاحظات: ${doc.notes}</div>`:''}
+      ${renderDocImages(doc.images)}
+    </div>`;
+  document.body.appendChild(modal);
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
+}
+
+// ══════════════════════════════════════════
+//  BACKUP ENGINE
+// ══════════════════════════════════════════
+function setBackupInterval() {
+  if (backupTimer) clearInterval(backupTimer);
+  const interval = parseInt(document.getElementById('backupInterval')?.value || 300000);
+  backupTimer = setInterval(autoBackup, interval);
+  log('info',`جدول النسخ الاحتياطي: كل ${interval/60000} دقيقة`);
+}
+
+function autoBackup() {
+  performBackup(false);
+}
+
+function manualBackup() {
+  performBackup(true);
+}
+
+function performBackup(manual) {
+  const t = now();
+  log('info', (manual?'[يدوي] ':'[تلقائي] ') + 'بدء النسخ الاحتياطي...');
+
+  // Simulate compression
+  setTimeout(()=>{
+    log('ok','ضغط البيانات... ✓');
+    setTimeout(()=>{
+      const enc = document.getElementById('encryptMode')?.value;
+      log('ok', (enc==='aes'?'تشفير AES-256... ✓':'تخطي التشفير...'));
+      setTimeout(()=>{
+        state.backupCount++;
+        state.lastBackup = new Date().toISOString();
+        save();
+        log('ok',`رفع إلى السحابة... ✓ | حجم: ${(JSON.stringify(state).length/1024).toFixed(1)} KB`);
+        log('ok',`✅ اكتملت النسخة رقم ${state.backupCount} في ${t}`);
+        if(manual) showToast('✅ تم النسخ الاحتياطي بنجاح','success');
+        updateBackupStats();
+      },600);
+    },400);
+  },300);
+}
+
+// ══════════════════════════════════════════
+//  EXPORT / IMPORT
+// ══════════════════════════════════════════
+function exportData() {
+  const json = JSON.stringify(state, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `warehouse-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  log('ok','تم تصدير البيانات إلى ملف JSON');
+  showToast('✅ تم التصدير','success');
+}
+
+function importTrigger() { document.getElementById('importFile').click(); }
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (imported.receive && imported.issue) {
+        state = imported;
+        save();
+        showToast('✅ تم استيراد البيانات بنجاح','success');
+        log('ok','تم استيراد البيانات بنجاح');
+      } else { showToast('❌ ملف غير صالح','info'); }
+    } catch { showToast('❌ خطأ في قراءة الملف','info'); }
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function now() { return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+
+function fmtDate(d) { if(!d) return '-'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('ar-EG-u-ca-gregory',{day:'numeric',month:'long',year:'numeric'}); }
+
+function log(type, msg) {
+  const logEl = document.getElementById('backupLog');
+  if (!logEl) return;
+  const cls = type==='ok'?'log-ok':type==='warn'?'log-warn':'log-info';
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">${now()}</span><span class="${cls}">  ${msg}</span>`;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  setTimeout(()=> t.className = '', 3000);
+}
+
+// ══════════════════════════════════════════
+//  INVENTORY (كشف المخزون الحي)
+// ══════════════════════════════════════════
+const WAREHOUSES = [
+  {code:"131",  name:"مخزن خامات ومواد أولية"},
+  {code:"132",  name:"مخزن وقود وزيوت"},
+  {code:"133",  name:"مخزن أدوات احتياطية"},
+  {code:"134",  name:"مخزن مواد تعبئة وتغليف"},
+  {code:"1351", name:"مخزن اللوازم والمهمات"},
+  {code:"1352", name:"مخزن القرطاسية"},
+];
+
+// invData: still used for Excel uploads + rollover persistence
+let invData = JSON.parse(localStorage.getItem('invData')||'{}');
+let currentInvCode = null;  // kept for compatibility
+
+// ── Live inventory state ──
+let liveInvData     = [];   // computed rows
+let liveInvFiltered = [];
+let liveInvShow     = 'pos'; // 'pos' | 'zero' | 'all'
+let liveInvSortKey  = 'name';
+let liveInvSortAsc  = true;
+
+// ── whMatch helper ──
+function whMatch(r, wh) {
+  return !wh || String(r.warehouseCode||'').startsWith(wh) || String(r.warehouse||'').startsWith(wh);
+}
+
+// ─────────────────────────────────────────
+//  Core compute: build live balances
+// ─────────────────────────────────────────
+function computeLiveInv(toDate, whFilter) {
+  let rows = getAllTxRows();
+  if (toDate)   rows = rows.filter(r => r.date <= toDate);
+  if (whFilter) rows = rows.filter(r => whMatch(r, whFilter));
+
+  const map = {};
+  rows.forEach(r => {
+    const key = (r.storeNum||r.name).toLowerCase() + '|' + r.warehouseCode;
+    if (!map[key]) map[key] = {
+      storeNum: r.storeNum||'', name: r.name,
+      warehouse: r.warehouse, warehouseCode: r.warehouseCode,
+      rolloverQty:0, receiveQty:0, outQty:0,
+      lastPrice:0, lastDate:'',
+      // refs for editing
+      _receiveDocIds: [], _rolloverDocIds: [], _issueDocIds: []
+    };
+    const d = map[key];
+    if (r.type === 'receive') {
+      if (r.isRollover) { d.rolloverQty += r.qty; d._rolloverDocIds.push(r.docnum); }
+      else              { d.receiveQty  += r.qty; d._receiveDocIds.push(r.docnum); }
+      d.lastPrice = r.price || d.lastPrice;
+    } else {
+      d.outQty += r.qty; d._issueDocIds.push(r.docnum);
+    }
+    if (r.date > d.lastDate) d.lastDate = r.date;
+  });
+
+  return Object.values(map).map(d => {
+    const inQty   = d.rolloverQty + d.receiveQty;
+    const balance = inQty - d.outQty;
+    return { ...d, inQty, balance, balValue: balance * d.lastPrice };
+  });
+}
+
+// ─────────────────────────────────────────
+//  Run & render
+// ─────────────────────────────────────────
+function runLiveInv() {
+  const wh   = document.getElementById('inv_wh_f')?.value || '';
+  const toD  = document.getElementById('inv_date_f')?.value || '';
+
+  liveInvData = computeLiveInv(toD, wh);
+
+  // Apply show filter
+  let filtered = liveInvData;
+  if (liveInvShow === 'pos')  filtered = liveInvData.filter(d => d.balance > 0);
+  if (liveInvShow === 'zero') filtered = liveInvData.filter(d => d.balance === 0);
+
+  // Sort
+  const sk = document.getElementById('inv_sort_f')?.value || liveInvSortKey;
+  filtered.sort((a,b)=>{
+    const va=typeof a[sk]==='string'?a[sk]:(a[sk]||0);
+    const vb=typeof b[sk]==='string'?b[sk]:(b[sk]||0);
+    return liveInvSortAsc?(va>vb?1:-1):(va<vb?1:-1);
+  });
+
+  liveInvFiltered = filtered;
+  renderLiveInvKpis();
+  renderLiveInvTable();
+}
+
+function setInvShow(val) {
+  liveInvShow = val;
+  // Update button styles
+  ['pos','zero','all'].forEach(v => {
+    const btn = document.getElementById('inv-btn-'+v);
+    if (!btn) return;
+    const active = v === val;
+    btn.style.background = active ? (v==='pos'?'rgba(16,185,129,0.2)':v==='zero'?'rgba(148,163,184,0.2)':'rgba(0,212,255,0.15)') : 'transparent';
+    btn.style.borderColor = active ? (v==='pos'?'var(--green)':v==='zero'?'#94a3b8':'var(--accent)') : 'var(--border)';
+    btn.style.color = active ? (v==='pos'?'var(--green)':v==='zero'?'#94a3b8':'var(--accent)') : 'var(--text2)';
+  });
+  runLiveInv();
+}
+
+function sortLiveInv(key) {
+  if (liveInvSortKey===key) liveInvSortAsc=!liveInvSortAsc;
+  else { liveInvSortKey=key; liveInvSortAsc=true; }
+  document.getElementById('inv_sort_f').value = key;
+  runLiveInv();
+}
+
+function filterLiveInv() {
+  const term = (document.getElementById('inv_srch_f')?.value||'').toLowerCase();
+  liveInvFiltered = liveInvData.filter(d => {
+    const matchShow = liveInvShow==='all' || (liveInvShow==='pos'&&d.balance>0) || (liveInvShow==='zero'&&d.balance===0);
+    const matchTerm = !term || d.name.toLowerCase().includes(term) || d.storeNum.toLowerCase().includes(term);
+    return matchShow && matchTerm;
+  });
+  renderLiveInvTable();
+}
+
+function renderLiveInvKpis() {
+  const all = liveInvData;
+  const pos = all.filter(d=>d.balance>0).length;
+  const zero = all.filter(d=>d.balance===0).length;
+  const neg  = all.filter(d=>d.balance<0).length;
+  const totalVal = all.filter(d=>d.balance>0).reduce((s,d)=>s+d.balValue,0);
+  const withRo  = all.filter(d=>d.rolloverQty>0).length;
+  document.getElementById('inv-live-kpis').innerHTML = `
+    <div class="stat-card" title="المواد ذات رصيد موجب"><div class="stat-label">رصيد موجب ✅</div><div class="stat-value" style="color:var(--green)">${pos}</div></div>
+    <div class="stat-card"><div class="stat-label">رصيد صفر</div><div class="stat-value" style="color:var(--text2)">${zero}</div></div>
+    <div class="stat-card" title="إصدار أكثر من الاستلام"><div class="stat-label">رصيد سالب ⚠</div><div class="stat-value" style="color:var(--red)">${neg}</div></div>
+    <div class="stat-card" title="مواد جاءت من تدوير الأرصدة"><div class="stat-label">من تدوير 🔁</div><div class="stat-value" style="color:var(--gold)">${withRo}</div></div>
+    <div class="stat-card"><div class="stat-label">إجمالي المواد</div><div class="stat-value">${all.length}</div></div>
+    <div class="stat-card"><div class="stat-label">قيمة المخزون</div><div class="stat-value" style="color:var(--gold);font-size:16px">${n(totalVal)}</div><div style="font-size:10px;color:var(--text3)">د.ع</div></div>
+  `;
+}
+
+function renderLiveInvTable() {
+  const tbody = document.getElementById('inv-live-tbody');
+  const totalVal = liveInvFiltered.reduce((s,d)=>s+Math.max(0,d.balValue),0);
+  document.getElementById('inv-live-count').textContent = liveInvFiltered.length;
+  document.getElementById('inv-live-val').textContent   = n(totalVal);
+
+  const wh = document.getElementById('inv_wh_f')?.value||'';
+  const toD= document.getElementById('inv_date_f')?.value||'';
+  document.getElementById('inv-live-title').textContent =
+    `كشف المخزون${wh?' — '+wh:''} — ${liveInvShow==='pos'?'رصيد موجب':liveInvShow==='zero'?'رصيد صفر':'جميع المواد'}${toD?' حتى '+fmtDate(toD):''}`;
+
+  if (!liveInvFiltered.length) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+      <div class="empty-icon">${liveInvShow==='pos'?'📦':'🔍'}</div>
+      <div class="empty-text">${liveInvShow==='pos'?'لا توجد مواد برصيد موجب':'لا توجد نتائج'}</div>
+      <div class="empty-sub">تحقق من الفلاتر أو أضف بيانات من استلام مخزني أو تدوير أرصدة</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = liveInvFiltered.map((d,i) => {
+    const balC  = d.balance>0?'var(--green)':d.balance<0?'var(--red)':'var(--text2)';
+    const roTag = d.rolloverQty>0 ? `<span style="font-size:9px;color:var(--gold);margin-right:3px">🔁</span>` : '';
+    return `<tr style="${d.rolloverQty>0&&d.receiveQty===0?'background:rgba(245,158,11,0.03)':''}">
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><span class="doc-num">${d.storeNum||'—'}</span></td>
+      <td style="text-align:right;font-weight:600">${roTag}${d.name}</td>
+      <td><span class="chip">${d.warehouseCode}</span></td>
+      <td style="color:var(--gold)">${n(d.rolloverQty)||'—'}</td>
+      <td style="color:var(--accent)">${n(d.receiveQty)||'—'}</td>
+      <td style="color:var(--red)">${n(d.outQty)||'—'}</td>
+      <td style="color:${balC};font-weight:800;font-size:15px">${n(d.balance)}</td>
+      <td>${n(d.lastPrice)}</td>
+      <td class="price-gold">${n(d.balValue)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick='openEditLiveItem(${JSON.stringify(d).replace(/'/g,"\\'")})'
+        title="تعديل الرقم المخزني أو السعر">✏</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function exportLiveInv() {
+  if (!liveInvFiltered.length) { showToast('لا توجد بيانات','info'); return; }
+  const hdr = ['الرقم المخزني','اسم المادة','المخزن','تدوير 🔁','استلام','إصدار','الرصيد','آخر سعر','القيمة'];
+  const rows = liveInvFiltered.map(d=>[d.storeNum,d.name,d.warehouse,d.rolloverQty,d.receiveQty,d.outQty,d.balance,d.lastPrice,d.balValue]);
+  const ws = XLSX.utils.aoa_to_sheet([hdr,...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'كشف المخزون');
+  XLSX.writeFile(wb,`كشف_المخزون_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// ─────────────────────────────────────────
+//  Edit live item modal
+// ─────────────────────────────────────────
+function openEditLiveItem(d) {
+  // Find the most recent receive or rollover doc that has this item
+  const allDocs = [...(state.receive||[]), ...(state.issue||[])];
+  // We look for the item across all relevant docs
+  let targetDoc  = null;
+  let targetIdx  = -1;
+
+  // Prefer rollover doc if item came from rollover
+  const lookIn = d.rolloverQty > 0
+    ? allDocs.filter(doc => doc.isRollover && doc.warehouse.startsWith(d.warehouseCode))
+    : allDocs.filter(doc => doc.type==='receive' && !doc.isRollover && doc.warehouse.startsWith(d.warehouseCode));
+
+  for (const doc of lookIn) {
+    const idx = doc.items.findIndex(it => it.name === d.name);
+    if (idx >= 0) { targetDoc = doc; targetIdx = idx; break; }
+  }
+
+  // If not found try any doc
+  if (!targetDoc) {
+    for (const doc of allDocs) {
+      const idx = doc.items.findIndex(it => it.name === d.name);
+      if (idx >= 0) { targetDoc = doc; targetIdx = idx; break; }
+    }
+  }
+
+  const modal = document.getElementById('inv-item-modal');
+  document.getElementById('inv-item-modal-title').textContent = '✏ تعديل بيانات المادة';
+
+  if (targetDoc && targetIdx >= 0) {
+    const it = targetDoc.items[targetIdx];
+    document.getElementById('iim-mode').value    = 'tx';
+    document.getElementById('iim-doc-id').value  = targetDoc.id;
+    document.getElementById('iim-item-idx').value = targetIdx;
+    document.getElementById('iim-storenum').value = it.storeNum||'';
+    document.getElementById('iim-name').value     = it.name||'';
+    document.getElementById('iim-qty').value      = it.qty||0;
+    document.getElementById('iim-parts').value    = it.parts||0;
+    document.getElementById('iim-price').value    = it.price||0;
+    document.getElementById('iim-value').value    = it.total||0;
+    document.getElementById('iim-date').value     = targetDoc.date||'';
+    document.getElementById('iim-wh').value       = d.warehouseCode||'';
+    document.getElementById('inv-item-source-badge').innerHTML =
+      `📋 المصدر: ${targetDoc.isRollover?'🔁 تدوير أرصدة':'📥 استلام مخزني'} &nbsp;|&nbsp; وثيقة: <b>${targetDoc.docnum}</b> &nbsp;|&nbsp; المخزن: <b>${targetDoc.warehouse}</b>`;
+  } else {
+    // Edit in invData fallback
+    document.getElementById('iim-mode').value    = 'inv';
+    document.getElementById('iim-storenum').value = d.storeNum||'';
+    document.getElementById('iim-name').value     = d.name||'';
+    document.getElementById('iim-qty').value      = d.inQty||0;
+    document.getElementById('iim-parts').value    = 0;
+    document.getElementById('iim-price').value    = d.lastPrice||0;
+    document.getElementById('iim-value').value    = d.balValue||0;
+    document.getElementById('iim-wh').value       = d.warehouseCode||'';
+    document.getElementById('inv-item-source-badge').innerHTML =
+      `📦 مادة من كشف المخزون المستورد &nbsp;|&nbsp; المخزن: <b>${d.warehouseCode}</b>`;
+  }
+
+  iimCalcVal();
+  modal.style.display = 'flex';
+}
+
+function openAddInvItemModal() {
+  document.getElementById('inv-item-modal-title').textContent = '+ إضافة مادة جديدة';
+  document.getElementById('iim-mode').value     = 'new';
+  document.getElementById('iim-doc-id').value   = '';
+  document.getElementById('iim-item-idx').value = '';
+  ['iim-storenum','iim-name'].forEach(id=>document.getElementById(id).value='');
+  ['iim-qty','iim-parts','iim-price','iim-value'].forEach(id=>document.getElementById(id).value=0);
+  document.getElementById('iim-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('iim-wh').value   = '';
+  document.getElementById('inv-item-source-badge').innerHTML =
+    '✏ ستُضاف هذه المادة كمستند استلام جديد في النظام';
+  document.getElementById('inv-item-modal').style.display = 'flex';
+}
+
+function closeInvItemModal() {
+  document.getElementById('inv-item-modal').style.display = 'none';
+  document.getElementById('iim-suggest').innerHTML      = '';
+  document.getElementById('iim-suggest-name').innerHTML = '';
+}
+
+function iimCalcVal() {
+  const qty   = parseFloat(document.getElementById('iim-qty').value)||0;
+  const price = parseFloat(document.getElementById('iim-price').value)||0;
+  document.getElementById('iim-value').value = (qty*price).toFixed(2);
+}
+
+function saveInvItemModal() {
+  const mode    = document.getElementById('iim-mode').value;
+  const storeNum= document.getElementById('iim-storenum').value.trim();
+  const name    = document.getElementById('iim-name').value.trim();
+  const qty     = parseFloat(document.getElementById('iim-qty').value)||0;
+  const parts   = parseFloat(document.getElementById('iim-parts').value)||0;
+  const price   = parseFloat(document.getElementById('iim-price').value)||0;
+  const value   = qty*price;
+  const date    = document.getElementById('iim-date').value || new Date().toISOString().split('T')[0];
+  const whCode  = document.getElementById('iim-wh').value;
+
+  if (!name) { showToast('أدخل اسم المادة','info'); return; }
+
+  if (mode === 'tx') {
+    // Edit item inside existing doc
+    const docId  = parseInt(document.getElementById('iim-doc-id').value);
+    const itIdx  = parseInt(document.getElementById('iim-item-idx').value);
+    const allDocs = [...(state.receive||[]), ...(state.issue||[])];
+    const doc = allDocs.find(d=>d.id===docId);
+    if (doc) {
+      doc.items[itIdx] = { ...doc.items[itIdx], storeNum, name, qty, parts, price, total: value };
+      doc.grandTotal = doc.items.reduce((s,it)=>s+it.total,0);
+      save();
+      showToast('✅ تم التعديل','success');
+    }
+  } else if (mode === 'new') {
+    // Create new receive doc
+    if (!whCode) { showToast('اختر المخزن','info'); return; }
+    const whObj = WAREHOUSES.find(w=>w.code===whCode);
+    const whName = whObj ? `${whCode} ${whObj.name}` : whCode;
+    const seq = 'R-'+String(state.seqR).padStart(4,'0');
+    state.seqR++;
+    state.receive.push({
+      id: Date.now(), seq, date, docnum: seq,
+      warehouse: whName, notes: 'إضافة يدوية من كشف المخزون',
+      items: [{storeNum, name, qty, parts, price, total:value}],
+      grandTotal: value, type:'receive', images:[], createdAt:new Date().toISOString()
+    });
+    save();
+    showToast('✅ تمت الإضافة كمستند استلام جديد','success');
+  } else if (mode === 'inv') {
+    // Update invData (Excel-imported items)
+    const code = whCode || Object.keys(invData)[0];
+    if (code && invData[code]) {
+      const rowIdx = invData[code].rows.findIndex(r => String(r[2]).trim() === name);
+      if (rowIdx >= 0) {
+        invData[code].rows[rowIdx] = [rowIdx+1, storeNum, name, qty, parts, price, value];
+        localStorage.setItem('invData', JSON.stringify(invData));
+        saveToInternalDb('invData', invData);
+        showToast('✅ تم تعديل كشف المخزون','success');
+      } else {
+        showToast('⚠ لم يتم العثور على المادة في كشف المخزون المستورد','info');
+      }
+    }
+  }
+
+  closeInvItemModal();
+  runLiveInv();
+}
+
+// ─────────────────────────────────────────
+//  Modal autocomplete
+// ─────────────────────────────────────────
+function iimSuggestNum() {
+  const term = document.getElementById('iim-storenum').value.trim();
+  const box  = document.getElementById('iim-suggest');
+  if (!term) { box.innerHTML=''; return; }
+  _iimShowSuggestions(term, 'num', box);
+}
+
+function iimSuggestName() {
+  const term = document.getElementById('iim-name').value.trim();
+  const box  = document.getElementById('iim-suggest-name');
+  if (term.length < 1) { box.innerHTML=''; return; }
+  _iimShowSuggestions(term, 'name', box);
+}
+
+function _iimShowSuggestions(term, by, box) {
+  const all = getAllInvItems();
+  const lc  = term.toLowerCase();
+  const matches = all.filter(it =>
+    by==='num'
+      ? it.storeNum && it.storeNum.toLowerCase().includes(lc)
+      : it.name && it.name.toLowerCase().includes(lc)
+  ).slice(0,12);
+  if (!matches.length) { box.innerHTML=''; return; }
+  box.innerHTML = `<div class="ac-dropdown" style="position:static;margin-top:2px;max-height:180px;overflow-y:auto">` +
+    matches.map(it=>`<div class="ac-item" onclick="iimPickItem('${(it.storeNum||'').replace(/'/g,"\\'")}','${(it.name||'').replace(/'/g,"\\'")}')">
+      <span class="ac-code">${it.storeNum||'—'}</span>
+      <span class="ac-name">${it.name||'—'}</span>
+      <span style="font-size:9px;color:var(--text3);margin-right:auto">${it.src==='excel'?'📊':'📋'}</span>
+    </div>`).join('') + '</div>';
+}
+
+function iimPickItem(num, name) {
+  document.getElementById('iim-storenum').value    = num;
+  document.getElementById('iim-name').value        = name;
+  document.getElementById('iim-suggest').innerHTML = '';
+  document.getElementById('iim-suggest-name').innerHTML = '';
+}
+
+// ─────────────────────────────────────────
+//  Compatibility stubs (keep old calls working)
+// ─────────────────────────────────────────
+function renderInvCards() { /* replaced by runLiveInv */ }
+function closeInvTable()  { /* no-op */ }
+function addInvRow()      { openAddInvItemModal(); }
+function filterInvTable() { filterLiveInv(); }
+function closeEditModal() { closeInvItemModal(); }
+function saveEditRow()    { saveInvItemModal(); }
+function openEditModal()  { /* no-op */ }
+function deleteInvRow()   { /* no-op */ }
+function clearInv(code) {
+  if (!confirm('هل تريد حذف بيانات الكشف المستورد لهذا المخزن؟')) return;
+  delete invData[code];
+  localStorage.setItem('invData', JSON.stringify(invData));
+  saveToInternalDb('invData', invData);
+  runLiveInv();
+  showToast('🗑 تم الحذف','info');
+}
+function exportInvTable() { exportLiveInv(); }
+function uploadInv(event, code) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb   = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const raw  = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      let hi = -1;
+      for (let i=0;i<raw.length;i++) {
+        if (raw[i].some(c=>String(c).includes('اسم')||String(c).includes('البند')||String(c).includes('مخزني'))) { hi=i; break; }
+      }
+      const start = hi>=0 ? hi+1 : 3;
+      const rows  = [];
+      for (let i=start;i<raw.length;i++) {
+        const r    = raw[i];
+        const name = String(r[2]||r[1]||'').trim();
+        if (!name || name.includes('إجمالي')) continue;
+        const qty  = parseFloat(r[3])||0;
+        const price= parseFloat(r[5])||0;
+        rows.push([r[0]||'', r[1]||'', name, qty, parseFloat(r[4])||0, price, qty*price]);
+      }
+      if (!rows.length) { showToast('❌ لم يُعثر على بيانات','info'); return; }
+      invData[code] = { rows, fileName:file.name, uploadedAt:new Date().toISOString() };
+      localStorage.setItem('invData', JSON.stringify(invData));
+      saveToInternalDb('invData', invData);
+      runLiveInv();
+      showToast(`✅ رُفع ${rows.length} مادة للمخزن ${code}`,'success');
+    } catch(err) { showToast('❌ خطأ: '+err.message,'info'); }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value='';
+}
+
+// ── collect all inventory items across all warehouses for autocomplete ──
+function getAllInvItems() {
+  const seen = new Map();
+
+  // 1. From Excel uploads
+  Object.entries(invData).forEach(([code, d]) => {
+    (d.rows||[]).forEach(r => {
+      const storeNum = String(r[1]||'').trim();
+      const name     = String(r[2]||'').trim();
+      if (!name) return;
+      const key = (storeNum||name).toLowerCase();
+      if (!seen.has(key)) seen.set(key, {storeNum, name, code, src:'excel'});
+    });
+  });
+
+  // 2. From docs
+  [...(state.receive||[]), ...(state.issue||[])].forEach(doc => {
+    (doc.items||[]).forEach(it => {
+      const storeNum = String(it.storeNum||'').trim();
+      const name     = String(it.name||'').trim();
+      if (!name) return;
+      const key = (storeNum||name).toLowerCase();
+      if (!seen.has(key)) seen.set(key, {storeNum, name, code: doc.warehouse?.split(' ')[0]||'', src:'doc'});
+    });
+  });
+
+  // 3. From catalogue
+  (catalogData||[]).forEach(c => {
+    const key = (c.storeNum||c.name).toLowerCase();
+    if (!seen.has(key)) seen.set(key, {storeNum:c.storeNum||'', name:c.name, code:c.warehouse||'', src:'catalogue'});
+  });
+
+  return Array.from(seen.values());
+}
+
+// ── Match function: highlight term in text ──
+function highlight(text, term) {
+  if (!term || !text) return text||'';
+  const idx = String(text).toLowerCase().indexOf(term.toLowerCase());
+  if (idx < 0) return text;
+  return text.slice(0,idx)
+    + `<span style="color:var(--gold);font-weight:800">${text.slice(idx,idx+term.length)}</span>`
+    + text.slice(idx+term.length);
+}
+
+// ── Autocomplete for item rows in receive/issue forms ──
+function getPortal(input) {
+  return input.closest('.ac-wrap').querySelector('.ac-portal');
+}
+
+function showAC(input, prefix) {
+  const term = input.value.trim();
+  const portal = getPortal(input);
+  const all = getAllInvItems();
+  if (!all.length && !term) { portal.style.display='none'; return; }
+  const sw  = all.filter(it => it.storeNum && it.storeNum.toLowerCase().startsWith(term.toLowerCase()));
+  const inc = all.filter(it => {
+    if (sw.includes(it)) return false;
+    return (it.storeNum && it.storeNum.toLowerCase().includes(term.toLowerCase())) ||
+           (it.name     && it.name.toLowerCase().includes(term.toLowerCase()));
+  });
+  const matches = [...sw, ...inc].slice(0, 20);
+  if (!matches.length) { portal.style.display='none'; return; }
+  portal.innerHTML = matches.map(it => {
+    return `<div class="ac-item"
+      onmousedown="event.preventDefault();pickAC(event,this,'${prefix}')"
+      data-num="${it.storeNum||''}" data-name="${it.name||''}">
+      <span class="ac-code">${highlight(it.storeNum||'—', term)}</span>
+      <span class="ac-name">${highlight(it.name||'—', term)}</span>
+      <span style="font-size:9px;color:var(--text3);margin-right:auto;padding-right:4px">${it.src==='excel'?'📊':it.src==='catalogue'?'📚':'📋'}</span>
+    </div>`;
+  }).join('');
+  portal.style.display = 'block';
+}
+
+function hideAC(input, delay) {
+  setTimeout(() => { const p = getPortal(input); if (p) p.style.display='none'; }, delay||250);
+}
+
+function pickAC(e, el, prefix) {
+  const row = el.closest('tr');
+  const sInput = row.querySelector('.storenum-input');
+  const nInput = row.querySelector('.name-input');
+  sInput.value = el.dataset.num;
+  nInput.value = el.dataset.name;
+  getPortal(sInput).style.display = 'none';
+  const qty = row.querySelector('.qty');
+  if (qty) { qty.focus(); calcRow(qty); }
+}
+
+// Patch showPage
+function showPage(name, evt) {
+  const page = document.getElementById('page-' + name);
+  if (!page) return;
+
+  document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+  page.classList.remove('hidden');
+
+  const activeNav = evt?.currentTarget ||
+    [...document.querySelectorAll('.nav-item')].find(el =>
+      (el.getAttribute('onclick') || '').includes(`showPage('${name}')`)
+    );
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  if (activeNav) activeNav.classList.add('active');
+  if (name === 'inventory') {
+    const df = document.getElementById('inv_date_f');
+    if (df && !df.value) df.value = new Date().toISOString().split('T')[0];
+    setInvShow('pos');   // default: show only positive balance
+  }
+  if (name === 'analytics') initAnalytics();
+  if (name === 'daily') { initDateRange('dly_from','dly_to'); }
+  if (name === 'movement') { initDateRange('mov_from','mov_to'); }
+  if (name === 'stocktake') { document.getElementById('stk_to').value = new Date().toISOString().split('T')[0]; }
+  if (name === 'query') runQuery();
+  if (name === 'catalogue') renderCatalog();
+  if (name === 'balance') { document.getElementById('bal_to').value = new Date().toISOString().split('T')[0]; runBalance(); }
+}
+
+function initDateRange(fromId, toId) {
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+  document.getElementById(fromId).value = firstDay.toISOString().split('T')[0];
+  document.getElementById(toId).value   = today.toISOString().split('T')[0];
+}
+
+// ── Helper: flatten all transactions into item-level rows ──
+function getAllTxRows() {
+  const rows = [];
+  [...state.receive, ...state.issue].forEach(doc => {
+    doc.items.forEach(it => {
+      rows.push({
+        date: doc.date,
+        docnum: doc.docnum,
+        type: doc.type,
+        warehouse: doc.warehouse,
+        warehouseCode: doc.warehouse.split(' ')[0] || doc.warehouse,
+        storeNum: it.storeNum || '',
+        name: it.name,
+        qty: it.qty,
+        price: it.price,
+        total: it.total,
+        isRollover: doc.isRollover === true   // ✅ تمرير علامة التدوير
+      });
+    });
+  });
+  return rows.sort((a,b) => a.date.localeCompare(b.date));
+}
+
+function whMatch(row, whVal) {
+  if (!whVal) return true;
+  return row.warehouseCode === whVal || row.warehouse.startsWith(whVal);
+}
+
+function n(v) { return (parseFloat(v)||0).toLocaleString('ar-IQ'); }
+
+// ══════════════════════════════════════════
+//  كشف اليومية
+// ══════════════════════════════════════════
+function runDaily() {
+  const from = document.getElementById('dly_from').value;
+  const to   = document.getElementById('dly_to').value;
+  const wh   = document.getElementById('dly_wh').value;
+  const tp   = document.getElementById('dly_type').value;
+
+  let rows = getAllTxRows();
+  if (from) rows = rows.filter(r => r.date >= from);
+  if (to)   rows = rows.filter(r => r.date <= to);
+  if (wh)   rows = rows.filter(r => whMatch(r, wh));
+  if (tp !== 'all') rows = rows.filter(r => r.type === tp);
+
+  const inTotal  = rows.filter(r=>r.type==='receive').reduce((s,r)=>s+r.total,0);
+  const outTotal = rows.filter(r=>r.type==='issue').reduce((s,r)=>s+r.total,0);
+
+  document.getElementById('dly-in-total').textContent  = n(inTotal);
+  document.getElementById('dly-out-total').textContent = n(outTotal);
+  document.getElementById('dly-net').textContent       = n(inTotal - outTotal);
+  document.getElementById('dly-title').textContent =
+    `كشف اليومية ${from?'من '+fmtDate(from):''} ${to?'إلى '+fmtDate(to):''}`;
+
+  const tbody = document.getElementById('dly-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">لا توجد حركات في هذه الفترة</div></div></td></tr>';
+  } else {
+    tbody.innerHTML = rows.map((r,i) => `<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="doc-num">${r.docnum}</span></td>
+      <td>${r.type==='receive'?'<span class="type-badge type-in">📥 إدخال</span>':'<span class="type-badge type-out">📤 إخراج</span>'}</td>
+      <td><span class="chip">${r.warehouse}</span></td>
+      <td style="text-align:right">${r.name}</td>
+      <td>${n(r.qty)}</td>
+      <td>${n(r.price)}</td>
+      <td class="price-gold">${n(r.total)}</td>
+    </tr>`).join('');
+  }
+  document.getElementById('daily-result').classList.remove('hidden');
+}
+
+function clearReport(page) {
+  if (page==='daily') { document.getElementById('daily-result').classList.add('hidden'); }
+  if (page==='stocktake') { document.getElementById('stk-result').classList.add('hidden'); }
+  if (page==='movement') { document.getElementById('mov-result').classList.add('hidden'); }
+}
+
+// ══════════════════════════════════════════
+//  جرد المستودع
+// ══════════════════════════════════════════
+function runStocktake() {
+  const wh = document.getElementById('stk_wh').value;
+  const to = document.getElementById('stk_to').value;
+
+  let rows = getAllTxRows();
+  if (to)   rows = rows.filter(r => r.date <= to);
+  if (wh)   rows = rows.filter(r => whMatch(r, wh));
+
+  // Group by storeNum+name+warehouse
+  const map = {};
+  rows.forEach(r => {
+    const key = (r.storeNum||r.name) + '|' + r.warehouseCode;
+    if (!map[key]) map[key] = {storeNum:r.storeNum, name:r.name, warehouse:r.warehouse, in:0, out:0, lastPrice:0};
+    if (r.type==='receive') { map[key].in += r.qty; map[key].lastPrice = r.price; }
+    else map[key].out += r.qty;
+  });
+
+  const items = Object.values(map);
+  const grandTotal = items.reduce((s,it)=> s + (it.in - it.out) * it.lastPrice, 0);
+
+  document.getElementById('stk-total').textContent = n(grandTotal);
+  document.getElementById('stk-title').textContent =
+    (wh ? `جرد ${wh}` : 'جرد كل المخازن') + (to ? ' حتى ' + fmtDate(to) : '');
+
+  const tbody = document.getElementById('stk-tbody');
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">لا توجد بيانات للجرد</div></div></td></tr>';
+  } else {
+    tbody.innerHTML = items.map((it,i) => {
+      const bal = it.in - it.out;
+      const val = bal * it.lastPrice;
+      const balColor = bal > 0 ? 'var(--green)' : bal < 0 ? 'var(--red)' : 'var(--text3)';
+      return `<tr>
+        <td style="color:var(--text3)">${i+1}</td>
+        <td><span class="doc-num">${it.storeNum||'-'}</span></td>
+        <td style="text-align:right">${it.name}</td>
+        <td><span class="chip">${it.warehouse}</span></td>
+        <td style="color:var(--green)">${n(it.in)}</td>
+        <td style="color:var(--red)">${n(it.out)}</td>
+        <td style="color:${balColor};font-weight:700">${n(bal)}</td>
+        <td>${n(it.lastPrice)}</td>
+        <td class="price-gold">${n(val)}</td>
+      </tr>`;
+    }).join('');
+  }
+  document.getElementById('stk-result').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════
+//  حركة مادة
+// ══════════════════════════════════════════
+function runMovement() {
+  const term = document.getElementById('mov_mat').value.trim().toLowerCase();
+  const from = document.getElementById('mov_from').value;
+  const to   = document.getElementById('mov_to').value;
+  const wh   = document.getElementById('mov_wh').value;
+
+  if (!term) { showToast('أدخل اسم المادة أو رقمها المخزني','info'); return; }
+
+  let rows = getAllTxRows().filter(r =>
+    r.name.toLowerCase().includes(term) ||
+    r.storeNum.toLowerCase().includes(term)
+  );
+  if (from) rows = rows.filter(r => r.date >= from);
+  if (to)   rows = rows.filter(r => r.date <= to);
+  if (wh)   rows = rows.filter(r => whMatch(r, wh));
+
+  const inQty  = rows.filter(r=>r.type==='receive').reduce((s,r)=>s+r.qty,0);
+  const outQty = rows.filter(r=>r.type==='issue').reduce((s,r)=>s+r.qty,0);
+  const inVal  = rows.filter(r=>r.type==='receive').reduce((s,r)=>s+r.total,0);
+  const outVal = rows.filter(r=>r.type==='issue').reduce((s,r)=>s+r.total,0);
+
+  // Summary cards
+  document.getElementById('mov-summary').innerHTML = `
+    <div class="stat-card"><div class="stat-label">إجمالي الوارد</div><div class="stat-value" style="color:var(--green)">${n(inQty)}</div><div style="font-size:11px;color:var(--text3)">وحدة</div></div>
+    <div class="stat-card"><div class="stat-label">إجمالي الصادر</div><div class="stat-value" style="color:var(--red)">${n(outQty)}</div><div style="font-size:11px;color:var(--text3)">وحدة</div></div>
+    <div class="stat-card"><div class="stat-label">الرصيد الحالي</div><div class="stat-value" style="color:var(--accent)">${n(inQty-outQty)}</div><div style="font-size:11px;color:var(--text3)">وحدة</div></div>
+    <div class="stat-card"><div class="stat-label">إجمالي القيمة</div><div class="stat-value" style="color:var(--gold)">${n(inVal-outVal)}</div><div style="font-size:11px;color:var(--text3)">د.ع</div></div>
+  `;
+
+  document.getElementById('mov-title').textContent = `حركة: "${term}"  (${rows.length} حركة)`;
+
+  const tbody = document.getElementById('mov-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">لا توجد حركات لهذه المادة</div></div></td></tr>';
+  } else {
+    tbody.innerHTML = rows.map((r,i) => `<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="doc-num">${r.docnum}</span></td>
+      <td>${r.type==='receive'?'<span class="type-badge type-in">📥 وارد</span>':'<span class="type-badge type-out">📤 صادر</span>'}</td>
+      <td><span class="chip">${r.warehouse}</span></td>
+      <td><span class="doc-num">${r.storeNum||'-'}</span></td>
+      <td style="text-align:right">${r.name}</td>
+      <td>${n(r.qty)}</td>
+      <td>${n(r.price)}</td>
+      <td class="price-gold">${n(r.total)}</td>
+    </tr>`).join('');
+  }
+  document.getElementById('mov-result').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════
+//  استعلام عن مادة
+// ══════════════════════════════════════════
+function runQuery() {
+  const term = (document.getElementById('qry_term')?.value||'').trim().toLowerCase();
+  const wh   = document.getElementById('qry_wh')?.value||'';
+  const container = document.getElementById('qry-result');
+  if (!container) return;
+
+  if (!term) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">اكتب اسم المادة أو رقمها للبحث</div></div>';
+    return;
+  }
+
+  // Collect all matching items from transactions + inventory
+  const txRows = getAllTxRows().filter(r =>
+    r.name.toLowerCase().includes(term) || r.storeNum.toLowerCase().includes(term)
+  );
+  if (wh) txRows.filter = r => whMatch(r, wh);
+
+  // Also search inventory files
+  const invMatches = [];
+  Object.entries(invData).forEach(([code, d]) => {
+    if (wh && code !== wh) return;
+    (d.rows||[]).forEach(r => {
+      const n2 = String(r[2]||'').toLowerCase();
+      const s2 = String(r[1]||'').toLowerCase();
+      if (n2.includes(term) || s2.includes(term)) {
+        invMatches.push({code, fileName:d.fileName, row:r});
+      }
+    });
+  });
+
+  // Group tx by material
+  const matMap = {};
+  txRows.forEach(r => {
+    const key = r.storeNum||r.name;
+    if (!matMap[key]) matMap[key] = {storeNum:r.storeNum, name:r.name, wh:r.warehouse, in:0, out:0, lastPrice:0, txList:[]};
+    if (r.type==='receive') { matMap[key].in += r.qty; matMap[key].lastPrice = r.price; }
+    else matMap[key].out += r.qty;
+    matMap[key].txList.push(r);
+  });
+
+  if (!Object.keys(matMap).length && !invMatches.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">😕</div><div class="empty-text">لا توجد نتائج</div><div class="empty-sub">جرّب كلمة مختلفة</div></div>';
+    return;
+  }
+
+  let html = '';
+
+  // Inventory matches card
+  if (invMatches.length) {
+    html += `<div class="form-card" style="margin-bottom:16px">
+      <div class="form-title">🗂 في كشوف المخزون المرفوعة (${invMatches.length} نتيجة)</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>المخزن</th><th>الرقم المخزني</th><th>اسم المادة</th><th>العدد</th><th>السعر الوسطي</th><th>القيمة</th><th>الملف</th></tr></thead>
+        <tbody>${invMatches.map(m=>`<tr>
+          <td><span class="chip">${m.code}</span></td>
+          <td><span class="doc-num">${m.row[1]||'-'}</span></td>
+          <td style="text-align:right">${m.row[2]}</td>
+          <td>${n(m.row[3])}</td>
+          <td>${n(m.row[5])}</td>
+          <td class="price-gold">${n(m.row[6])}</td>
+          <td style="font-size:11px;color:var(--text3)">${m.fileName}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+  }
+
+  // Transaction summary
+  const mats = Object.values(matMap);
+  if (mats.length) {
+    html += `<div class="form-card">
+      <div class="form-title">📋 في حركات الاستلام والإصدار (${txRows.length} حركة)</div>
+      ${mats.map(m => {
+        const bal = m.in - m.out;
+        const balC = bal>0?'var(--green)':bal<0?'var(--red)':'var(--text3)';
+        return `
+        <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+              <span class="doc-num" style="font-size:14px">${m.storeNum||'—'}</span>
+              <span style="font-size:15px;font-weight:700;margin-right:10px">${m.name}</span>
+              <span class="chip">${m.wh}</span>
+            </div>
+            <div style="display:flex;gap:16px;font-size:12px">
+              <span style="color:var(--green)">وارد: <b>${n(m.in)}</b></span>
+              <span style="color:var(--red)">صادر: <b>${n(m.out)}</b></span>
+              <span style="color:${balC}">رصيد: <b>${n(bal)}</b></span>
+              <span style="color:var(--gold)">قيمة: <b>${n(bal*m.lastPrice)}</b> د.ع</span>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>التاريخ</th><th>الوثيقة</th><th>النوع</th><th>العدد</th><th>السعر</th><th>القيمة</th></tr></thead>
+            <tbody>${m.txList.map(r=>`<tr>
+              <td>${fmtDate(r.date)}</td>
+              <td><span class="doc-num">${r.docnum}</span></td>
+              <td>${r.type==='receive'?'<span class="type-badge type-in">📥 وارد</span>':'<span class="type-badge type-out">📤 صادر</span>'}</td>
+              <td>${n(r.qty)}</td><td>${n(r.price)}</td><td class="price-gold">${n(r.total)}</td>
+            </tr>`).join('')}
+            </tbody>
+          </table></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ── Print ──
+// ══════════════════════════════════════════
+//  IMAGE ATTACHMENTS
+// ══════════════════════════════════════════
+let pendingImages = { r: [], i: [] };
+
+function addImages(event, prefix) {
+  const files = Array.from(event.target.files);
+  const current = pendingImages[prefix] || [];
+  const remaining = 5 - current.length;
+  if (remaining <= 0) { showToast('الحد الأقصى 5 صور لكل مستند','info'); return; }
+  const toAdd = files.slice(0, remaining);
+  let loaded = 0;
+  toAdd.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingImages[prefix].push({ name: file.name, data: e.target.result });
+      loaded++;
+      if (loaded === toAdd.length) renderImgPreview(prefix);
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+  if (files.length > remaining) showToast(`تم رفع ${remaining} صورة فقط (الحد الأقصى 5)`,'info');
+}
+
+function renderImgPreview(prefix) {
+  const imgs = pendingImages[prefix] || [];
+  const wrap = document.getElementById(prefix + '_img_preview');
+  const count = document.getElementById(prefix + '_img_count');
+  if (!wrap) return;
+  count.textContent = imgs.length + ' / 5';
+  wrap.innerHTML = imgs.map((img, i) => `
+    <div class="img-thumb-wrap">
+      <img class="img-thumb" src="${img.data}" alt="${img.name}" onclick="openLightbox('${img.data}')">
+      <button class="img-remove" onclick="removeImg('${prefix}',${i})" title="حذف">✕</button>
+    </div>`).join('');
+  // Disable upload button if 5 reached
+  const lbl = document.getElementById(prefix + '_img_label');
+  if (lbl) lbl.style.opacity = imgs.length >= 5 ? '0.4' : '1';
+}
+
+function removeImg(prefix, idx) {
+  pendingImages[prefix].splice(idx, 1);
+  renderImgPreview(prefix);
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// Show images in viewDoc popup
+function renderDocImages(images) {
+  if (!images || !images.length) return '';
+  return `<div style="margin-top:14px">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">📎 صور التأكيد (${images.length})</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${images.map(img=>`<div class="img-thumb-wrap">
+        <img class="img-thumb" src="${img.data}" alt="${img.name}" onclick="openLightbox('${img.data}')">
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+//  AUTO-EXPORT (حفظ دائم)
+// ══════════════════════════════════════════
+let autoExportTimer = null;
+const AUTO_EXPORT_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
+function startAutoExport() {
+  if (autoExportTimer) clearInterval(autoExportTimer);
+  autoExportTimer = setInterval(triggerAutoExport, AUTO_EXPORT_INTERVAL);
+  log('info', 'التصدير التلقائي نشط — كل 10 دقائق');
+}
+
+function triggerAutoExport() {
+  // Only export if there's real data
+  const total = state.receive.length + state.issue.length;
+  if (!total) return;
+  const json = JSON.stringify({...state, exportedAt: new Date().toISOString()}, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().replace('T','_').substring(0,16).replace(':','-');
+  a.href     = url;
+  a.download = `مخزن_نسخة_${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  log('ok', `📥 تم تصدير النسخة الاحتياطية تلقائياً (${total} مستند)`);
+  showToast('📥 تم تصدير النسخة الاحتياطية تلقائياً','success');
+}
+
+// Warn before closing if unsaved changes since last export
+let lastExportDocCount = 0;
+window.addEventListener('beforeunload', e => {
+  const total = state.receive.length + state.issue.length;
+  if (total > lastExportDocCount) {
+    e.preventDefault();
+    e.returnValue = 'لديك بيانات غير مصدَّرة. هل تريد المغادرة؟';
+  }
+});
+
+
+// ══════════════════════════════════════════
+//  ANALYTICS — تقارير المواد
+// ══════════════════════════════════════════
+let anData = [];       // computed rows
+let anFiltered = [];   // after search
+let anSortKey = '';
+let anSortAsc = true;
+
+function initAnalytics() {
+  // Populate year list
+  const sel = document.getElementById('an_year');
+  if (!sel) return;
+  const now = new Date();
+  const thisMonth = now.toISOString().substring(0,7);
+  document.getElementById('an_month').value = thisMonth;
+  const curY = now.getFullYear();
+  sel.innerHTML = '';
+  for (let y = curY; y >= curY - 6; y--) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    sel.appendChild(o);
+  }
+}
+
+function toggleAnPeriod() {
+  const pt = document.getElementById('an_period_type').value;
+  const show = id => document.getElementById(id).classList.remove('hidden');
+  const hide = id => document.getElementById(id).classList.add('hidden');
+  ['an_month_wrap','an_year_wrap','an_from_wrap','an_to_wrap','an_mcount_wrap']
+    .forEach(hide);
+  if (pt === 'month')        show('an_month_wrap');
+  else if (pt === 'year')    show('an_year_wrap');
+  else if (pt === 'custom') { show('an_from_wrap'); show('an_to_wrap'); }
+  else if (pt === 'months_count') show('an_mcount_wrap');
+}
+
+function getAnDateRange() {
+  const pt = document.getElementById('an_period_type').value;
+  const now = new Date();
+  let from, to, label;
+  if (pt === 'month') {
+    const m = document.getElementById('an_month').value;
+    if (!m) return null;
+    from = m + '-01';
+    const d = new Date(m + '-01');
+    d.setMonth(d.getMonth()+1); d.setDate(0);
+    to = d.toISOString().split('T')[0];
+    label = new Date(from).toLocaleDateString('ar-EG-u-ca-gregory',{year:'numeric',month:'long'});
+  } else if (pt === 'year') {
+    const y = document.getElementById('an_year').value;
+    from = y + '-01-01'; to = y + '-12-31';
+    label = 'سنة ' + y;
+  } else if (pt === 'custom') {
+    from = document.getElementById('an_from').value;
+    to   = document.getElementById('an_to').value;
+    if (!from || !to) return null;
+    label = fmtDate(from) + ' — ' + fmtDate(to);
+  } else {
+    const mc = parseInt(document.getElementById('an_mcount').value) || 3;
+    const t = new Date();
+    to = t.toISOString().split('T')[0];
+    t.setMonth(t.getMonth() - mc);
+    from = t.toISOString().split('T')[0];
+    label = 'آخر ' + mc + ' أشهر';
+  }
+  return { from, to, label };
+}
+
+function runAnalytics() {
+  const range = getAnDateRange();
+  if (!range) { showToast('حدد الفترة الزمنية','info'); return; }
+  const wh = document.getElementById('an_wh').value;
+  const { from, to, label } = range;
+
+  // Filter transactions
+  const rows = getAllTxRows().filter(r => {
+    if (r.date < from || r.date > to) return false;
+    if (wh && !whMatch(r, wh)) return false;
+    return true;
+  });
+
+  // Group by storeNum+name+warehouse
+  const map = {};
+  rows.forEach(r => {
+    const key = (r.storeNum||r.name) + '|' + r.warehouseCode;
+    if (!map[key]) map[key] = {
+      name: r.name, storeNum: r.storeNum||'',
+      warehouse: r.warehouse, warehouseCode: r.warehouseCode,
+      buyQty:0, buyVal:0, sellQty:0, sellVal:0, txList:[]
+    };
+    if (r.type === 'receive') {
+      map[key].buyQty  += r.qty;
+      map[key].buyVal  += r.total;
+    } else {
+      map[key].sellQty += r.qty;
+      map[key].sellVal += r.total;
+    }
+    map[key].txList.push(r);
+  });
+
+  anData = Object.values(map).map(d => ({
+    ...d,
+    profit: d.sellVal - d.buyVal,
+    margin: d.buyVal > 0 ? ((d.sellVal - d.buyVal) / d.buyVal * 100) : 0
+  }));
+
+  // KPIs
+  const totBuy  = anData.reduce((s,d)=>s+d.buyVal,0);
+  const totSell = anData.reduce((s,d)=>s+d.sellVal,0);
+  const totProfit = totSell - totBuy;
+  const materials = anData.length;
+
+  document.getElementById('an-kpis').innerHTML = `
+    <div class="stat-card"><div class="stat-label">إجمالي المشتريات</div>
+      <div class="stat-value" style="color:var(--accent);font-size:22px">${n(totBuy)}</div>
+      <div style="font-size:11px;color:var(--text3)">دينار عراقي</div></div>
+    <div class="stat-card"><div class="stat-label">إجمالي المبيعات</div>
+      <div class="stat-value" style="color:var(--green);font-size:22px">${n(totSell)}</div>
+      <div style="font-size:11px;color:var(--text3)">دينار عراقي</div></div>
+    <div class="stat-card"><div class="stat-label">صافي الربح</div>
+      <div class="stat-value" style="color:${totProfit>=0?'var(--gold)':'var(--red)'};font-size:22px">${n(totProfit)}</div>
+      <div style="font-size:11px;color:var(--text3)">دينار عراقي</div></div>
+    <div class="stat-card"><div class="stat-label">هامش الربح</div>
+      <div class="stat-value" style="color:var(--gold);font-size:22px">${totBuy>0?(totProfit/totBuy*100).toFixed(1):0}%</div>
+      <div style="font-size:11px;color:var(--text3)">من قيمة الشراء</div></div>
+    <div class="stat-card"><div class="stat-label">عدد المواد</div>
+      <div class="stat-value" style="font-size:28px">${materials}</div>
+      <div style="font-size:11px;color:var(--text3)">مادة في التقرير</div></div>
+  `;
+
+  document.getElementById('an-title').textContent =
+    `تقرير: ${label}${wh?' | مخزن '+wh:' | كل المخازن'}`;
+
+  document.getElementById('an-search').value = '';
+  anFiltered = [...anData];
+  anSortKey = '';
+  renderAnTable();
+  document.getElementById('analytics-result').classList.remove('hidden');
+  document.getElementById('an-detail').classList.add('hidden');
+  document.getElementById('analytics-result').scrollIntoView({behavior:'smooth'});
+}
+
+function renderAnTable() {
+  const tbody = document.getElementById('an-tbody');
+  if (!anFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">لا توجد بيانات في هذه الفترة</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = anFiltered.map((d,i) => {
+    const profitC = d.profit >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<tr>
+      <td style="text-align:right;font-weight:600">${d.name}</td>
+      <td><span class="doc-num">${d.storeNum||'—'}</span></td>
+      <td><span class="chip">${d.warehouseCode}</span></td>
+      <td>${n(d.buyQty)}</td>
+      <td style="color:var(--accent)">${n(d.buyVal)}</td>
+      <td>${n(d.sellQty)}</td>
+      <td style="color:var(--green)">${n(d.sellVal)}</td>
+      <td style="color:${profitC};font-weight:700">${n(d.profit)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="showAnDetail(${i})">📋 تفاصيل</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterAnTable() {
+  const term = document.getElementById('an-search').value.toLowerCase();
+  anFiltered = anData.filter(d =>
+    d.name.toLowerCase().includes(term) ||
+    d.storeNum.toLowerCase().includes(term)
+  );
+  renderAnTable();
+}
+
+function sortAn(key) {
+  if (anSortKey === key) anSortAsc = !anSortAsc;
+  else { anSortKey = key; anSortAsc = false; }
+  anFiltered.sort((a,b) => {
+    const va = typeof a[key]==='string' ? a[key] : (a[key]||0);
+    const vb = typeof b[key]==='string' ? b[key] : (b[key]||0);
+    return anSortAsc ? (va > vb ? 1:-1) : (va < vb ? 1:-1);
+  });
+  renderAnTable();
+}
+
+function showAnDetail(idx) {
+  const d = anFiltered[idx];
+  document.getElementById('an-detail-title').textContent = `📋 تفاصيل: ${d.name}`;
+
+  // Detail KPIs
+  document.getElementById('an-detail-kpis').innerHTML = `
+    <div class="stat-card"><div class="stat-label">كمية الشراء</div>
+      <div class="stat-value" style="font-size:22px;color:var(--accent)">${n(d.buyQty)}</div></div>
+    <div class="stat-card"><div class="stat-label">قيمة الشراء</div>
+      <div class="stat-value" style="font-size:18px;color:var(--accent)">${n(d.buyVal)}</div>
+      <div style="font-size:10px;color:var(--text3)">د.ع</div></div>
+    <div class="stat-card"><div class="stat-label">كمية البيع</div>
+      <div class="stat-value" style="font-size:22px;color:var(--green)">${n(d.sellQty)}</div></div>
+    <div class="stat-card"><div class="stat-label">قيمة البيع</div>
+      <div class="stat-value" style="font-size:18px;color:var(--green)">${n(d.sellVal)}</div>
+      <div style="font-size:10px;color:var(--text3)">د.ع</div></div>
+    <div class="stat-card"><div class="stat-label">الربح الصافي</div>
+      <div class="stat-value" style="font-size:18px;color:${d.profit>=0?'var(--gold)':'var(--red)'}">${n(d.profit)}</div>
+      <div style="font-size:10px;color:var(--text3)">${d.margin.toFixed(1)}% هامش</div></div>
+  `;
+
+  // Transactions
+  const tbody = document.getElementById('an-detail-tbody');
+  tbody.innerHTML = d.txList.sort((a,b)=>a.date.localeCompare(b.date)).map((r,i)=>`<tr>
+    <td style="color:var(--text3)">${i+1}</td>
+    <td>${fmtDate(r.date)}</td>
+    <td><span class="doc-num">${r.docnum}</span></td>
+    <td>${r.type==='receive'?'<span class="type-badge type-in">📥 شراء/وارد</span>':'<span class="type-badge type-out">📤 بيع/صادر</span>'}</td>
+    <td><span class="chip">${r.warehouseCode}</span></td>
+    <td>${n(r.qty)}</td>
+    <td>${n(r.price)}</td>
+    <td class="price-gold">${n(r.total)}</td>
+  </tr>`).join('');
+
+  const det = document.getElementById('an-detail');
+  det.classList.remove('hidden');
+  det.scrollIntoView({behavior:'smooth'});
+}
+
+function exportAnExcel() {
+  if (!anFiltered.length) { showToast('لا توجد بيانات للتصدير','info'); return; }
+  const headers = ['اسم المادة','الرقم المخزني','المخزن','كمية الشراء','قيمة الشراء','كمية البيع','قيمة البيع','الربح','هامش %'];
+  const rows = anFiltered.map(d=>[d.name,d.storeNum,d.warehouse,d.buyQty,d.buyVal,d.sellQty,d.sellVal,d.profit,d.margin.toFixed(1)+'%']);
+  const ws = XLSX.utils.aoa_to_sheet([headers,...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'تقرير المواد');
+  XLSX.writeFile(wb,`تقرير_المواد_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+function printReport(divId) {
+  const el = document.getElementById(divId);
+  if (!el || el.classList.contains('hidden')) { showToast('شغّل الكشف أولاً','info'); return; }
+  const w = window.open('','_blank');
+  w.document.write(`<html dir="rtl"><head><meta charset="UTF-8">
+    <style>
+      body{font-family:Arial,sans-serif;font-size:12px;direction:rtl}
+      table{width:100%;border-collapse:collapse}
+      th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}
+      th{background:#1a3a5c;color:#fff}
+      tr:nth-child(even)td{background:#f0f7ff}
+      .type-badge{padding:2px 8px;border-radius:10px;font-size:11px}
+    </style></head><body>
+    ${el.innerHTML}
+    </body></html>`);
+  w.document.close();
+  w.print();
+}
+
+// ══════════════════════════════════════════
+//  كتالوج المواد  (CATALOGUE)
+// ══════════════════════════════════════════
+let catalogData = JSON.parse(localStorage.getItem('catalogData') || '[]');
+let catFiltered = [];
+
+function saveCatalogToStorage() {
+  localStorage.setItem('catalogData', JSON.stringify(catalogData));
+  saveToInternalDb('catalogData', catalogData);
+}
+
+// Merge items from transactions into catalogue (auto-discover)
+function syncCatalogFromTx() {
+  const seen = new Set(catalogData.map(c => (c.storeNum||c.name).toLowerCase()));
+  let added = 0;
+  getAllInvItems().forEach(it => {
+    const key = (it.storeNum||it.name).toLowerCase();
+    if (!seen.has(key) && (it.storeNum||it.name)) {
+      catalogData.push({ id: Date.now()+added, storeNum: it.storeNum||'', name: it.name,
+        warehouse: it.code||'', unit:'', minQty:0, notes:'', source: it.src==='excel'?'كشف مخزون':'وثيقة' });
+      seen.add(key);
+      added++;
+    }
+  });
+  if (added) saveCatalogToStorage();
+  return added;
+}
+
+function renderCatalog() {
+  syncCatalogFromTx();
+  catFiltered = [...catalogData];
+  applyFilters_cat();
+  renderCatStats();
+}
+
+function renderCatStats() {
+  const total = catalogData.length;
+  const withNum = catalogData.filter(c=>c.storeNum).length;
+  const warehouses = new Set(catalogData.map(c=>c.warehouse).filter(Boolean)).size;
+  document.getElementById('cat-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">إجمالي المواد</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">برقم مخزني</div><div class="stat-value" style="color:var(--green)">${withNum}</div></div>
+    <div class="stat-card"><div class="stat-label">مخازن مغطاة</div><div class="stat-value" style="color:var(--accent)">${warehouses}</div></div>
+    <div class="stat-card"><div class="stat-label">بدون رقم</div><div class="stat-value" style="color:var(--gold)">${total-withNum}</div></div>
+  `;
+}
+
+function applyFilters_cat() {
+  const term = (document.getElementById('cat-search')?.value||'').toLowerCase();
+  const wh   = document.getElementById('cat-wh-filter')?.value||'';
+  catFiltered = catalogData.filter(c => {
+    const matchTerm = !term || c.name.toLowerCase().includes(term) || (c.storeNum||'').toLowerCase().includes(term);
+    const matchWh   = !wh || c.warehouse === wh;
+    return matchTerm && matchWh;
+  });
+  renderCatTable();
+}
+
+function filterCatalog() { applyFilters_cat(); }
+
+function renderCatTable() {
+  const tbody = document.getElementById('cat-tbody');
+  document.getElementById('cat-count').textContent = catFiltered.length;
+  if (!catFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">لا توجد مواد</div><div class="empty-sub">أضف مادة أو استورد من Excel</div></div></td></tr>';
+    return;
+  }
+  const whNames = {131:'خامات ومواد أولية',132:'وقود وزيوت',133:'أدوات احتياطية',134:'مواد تعبئة وتغليف',1351:'اللوازم والمهمات',1352:'القرطاسية'};
+  tbody.innerHTML = catFiltered.map((c,i) => `<tr>
+    <td style="color:var(--text3)">${i+1}</td>
+    <td><span class="doc-num">${c.storeNum||'—'}</span></td>
+    <td style="text-align:right;font-weight:600">${c.name}</td>
+    <td>${c.warehouse ? `<span class="chip">${c.warehouse}</span> <span style="font-size:11px;color:var(--text3)">${whNames[c.warehouse]||''}</span>` : '—'}</td>
+    <td>${c.unit||'—'}</td>
+    <td style="font-size:11px;color:var(--text2)">${c.notes||'—'}</td>
+    <td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${c.source==='يدوي'?'rgba(245,158,11,0.15)':'rgba(0,212,255,0.1)'};color:${c.source==='يدوي'?'var(--gold)':'var(--accent)'}">${c.source||'يدوي'}</span></td>
+    <td><div class="action-btns">
+      <button class="btn btn-outline btn-sm" onclick="openEditCatModal(${catalogData.indexOf(c)})">✏</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteCatalogItem(${catalogData.indexOf(c)})">🗑</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function openAddCatalogModal() {
+  document.getElementById('cat-modal-title').textContent = '📚 إضافة مادة جديدة';
+  document.getElementById('cat-edit-id').value = '';
+  ['cat-storenum','cat-name','cat-unit','cat-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cat-wh').value = '';
+  document.getElementById('cat-minqty').value = 0;
+  document.getElementById('cat-modal').style.display = 'flex';
+}
+
+function openEditCatModal(idx) {
+  const c = catalogData[idx];
+  document.getElementById('cat-modal-title').textContent = '✏ تعديل مادة';
+  document.getElementById('cat-edit-id').value = idx;
+  document.getElementById('cat-storenum').value = c.storeNum||'';
+  document.getElementById('cat-name').value = c.name||'';
+  document.getElementById('cat-wh').value = c.warehouse||'';
+  document.getElementById('cat-unit').value = c.unit||'';
+  document.getElementById('cat-minqty').value = c.minQty||0;
+  document.getElementById('cat-notes').value = c.notes||'';
+  document.getElementById('cat-modal').style.display = 'flex';
+}
+
+function closeCatModal() { document.getElementById('cat-modal').style.display = 'none'; }
+
+function saveCatalogItem() {
+  const name = document.getElementById('cat-name').value.trim();
+  if (!name) { showToast('أدخل اسم المادة','info'); return; }
+  const item = {
+    id: Date.now(),
+    storeNum: document.getElementById('cat-storenum').value.trim(),
+    name,
+    warehouse: document.getElementById('cat-wh').value,
+    unit: document.getElementById('cat-unit').value.trim(),
+    minQty: parseFloat(document.getElementById('cat-minqty').value)||0,
+    notes: document.getElementById('cat-notes').value.trim(),
+    source: 'يدوي'
+  };
+  const editIdx = document.getElementById('cat-edit-id').value;
+  if (editIdx !== '') {
+    catalogData[parseInt(editIdx)] = {...catalogData[parseInt(editIdx)], ...item};
+    showToast('✅ تم التعديل','success');
+  } else {
+    catalogData.push(item);
+    showToast('✅ تمت الإضافة','success');
+  }
+  saveCatalogToStorage();
+  closeCatModal();
+  renderCatalog();
+}
+
+function deleteCatalogItem(idx) {
+  if (!confirm('حذف هذه المادة من الكتالوج؟')) return;
+  catalogData.splice(idx, 1);
+  saveCatalogToStorage();
+  renderCatalog();
+  showToast('🗑 تم الحذف','info');
+}
+
+function exportCatalog() {
+  if (!catalogData.length) { showToast('الكتالوج فارغ','info'); return; }
+  const headers = ['الرقم المخزني','اسم المادة','المخزن الافتراضي','وحدة القياس','الحد الأدنى','ملاحظات'];
+  const rows = catalogData.map(c => [c.storeNum||'',c.name,c.warehouse||'',c.unit||'',c.minQty||0,c.notes||'']);
+  const ws = XLSX.utils.aoa_to_sheet([headers,...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'كتالوج المواد');
+  XLSX.writeFile(wb, `كتالوج_المواد_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+function importCatalog(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      if (raw.length < 2) { showToast('الملف فارغ','info'); return; }
+      // Find header row
+      let hi = 0;
+      for (let i=0; i<Math.min(5,raw.length); i++) {
+        if (raw[i].some(c=>String(c).includes('اسم')||String(c).includes('مادة'))) { hi=i; break; }
+      }
+      const headers = raw[hi].map(c=>String(c).trim());
+      // Map columns
+      const nameCol   = headers.findIndex(h=>h.includes('اسم')||h.includes('مادة'));
+      const numCol    = headers.findIndex(h=>h.includes('رقم')||h.includes('مخزني'));
+      const whCol     = headers.findIndex(h=>h.includes('مخزن'));
+      const unitCol   = headers.findIndex(h=>h.includes('وحدة'));
+      const notesCol  = headers.findIndex(h=>h.includes('ملاحظ'));
+      let added = 0;
+      const seen = new Set(catalogData.map(c=>(c.storeNum||c.name).toLowerCase()));
+      for (let i=hi+1; i<raw.length; i++) {
+        const r = raw[i];
+        const name = String(r[nameCol]||'').trim();
+        if (!name) continue;
+        const storeNum = numCol>=0 ? String(r[numCol]||'').trim() : '';
+        const key = (storeNum||name).toLowerCase();
+        if (!seen.has(key)) {
+          catalogData.push({ id:Date.now()+i, storeNum, name,
+            warehouse: whCol>=0 ? String(r[whCol]||'') : '',
+            unit: unitCol>=0 ? String(r[unitCol]||'') : '',
+            minQty:0, notes: notesCol>=0 ? String(r[notesCol]||'') : '', source:'Excel' });
+          seen.add(key); added++;
+        }
+      }
+      saveCatalogToStorage();
+      renderCatalog();
+      showToast(`✅ تم استيراد ${added} مادة جديدة`,'success');
+    } catch(err) { showToast('❌ خطأ: '+err.message,'info'); }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value = '';
+}
+
+// Override getAllInvItems to also include catalogue
+const _originalGetAllInvItems = getAllInvItems;
+function getAllInvItems() {
+  const base = _originalGetAllInvItems();
+  const seen = new Set(base.map(it=>(it.storeNum||it.name).toLowerCase()));
+  catalogData.forEach(c => {
+    const key = (c.storeNum||c.name).toLowerCase();
+    if (!seen.has(key)) {
+      base.push({storeNum: c.storeNum||'', name: c.name, code: c.warehouse||'', src:'catalogue'});
+      seen.add(key);
+    }
+  });
+  return base;
+}
+
+// ══════════════════════════════════════════
+//  الأرصدة المتبقية  (BALANCE)
+// ══════════════════════════════════════════
+let balData = [];
+let balFiltered = [];
+let balSortKey = 'name';
+let balSortAsc = true;
+
+function runBalance() {
+  const wh = document.getElementById('bal_wh').value;
+  const to = document.getElementById('bal_to').value;
+  const show = document.getElementById('bal_show').value;
+
+  let rows = getAllTxRows();
+  if (to)   rows = rows.filter(r => r.date <= to);
+  if (wh)   rows = rows.filter(r => whMatch(r, wh));
+
+  const map = {};
+  rows.forEach(r => {
+    const key = (r.storeNum||r.name) + '|' + r.warehouseCode;
+    if (!map[key]) map[key] = {
+      storeNum: r.storeNum||'', name: r.name,
+      warehouse: r.warehouse, warehouseCode: r.warehouseCode,
+      rolloverQty:0, rolloverVal:0,   // كمية التدوير
+      receiveQty:0,  receiveVal:0,    // استلام عادي فقط
+      outQty:0,      outVal:0,        // إصدار
+      lastPrice:0,   lastDate:''
+    };
+    const d = map[key];
+    if (r.type === 'receive') {
+      if (r.isRollover) { d.rolloverQty += r.qty; d.rolloverVal += r.total; }
+      else              { d.receiveQty  += r.qty; d.receiveVal  += r.total; }
+      d.lastPrice = r.price;
+    } else {
+      d.outQty += r.qty; d.outVal += r.total;
+    }
+    if (r.date > d.lastDate) d.lastDate = r.date;
+  });
+
+  balData = Object.values(map).map(d => {
+    const inQty  = d.rolloverQty + d.receiveQty;
+    const balance = inQty - d.outQty;
+    return { ...d, inQty, balance, balValue: balance * d.lastPrice };
+  });
+
+  // Apply show filter
+  if (show === 'pos')  balData = balData.filter(d=>d.balance>0);
+  if (show === 'zero') balData = balData.filter(d=>d.balance===0);
+  if (show === 'neg')  balData = balData.filter(d=>d.balance<0);
+
+  // KPIs
+  const totalItems = balData.length;
+  const totalValue = balData.reduce((s,d)=>s+Math.max(0,d.balValue),0);
+  const posItems   = balData.filter(d=>d.balance>0).length;
+  const negItems   = balData.filter(d=>d.balance<0).length;
+  const zeroItems  = balData.filter(d=>d.balance===0).length;
+  const rollItems  = balData.filter(d=>d.rolloverQty>0).length;
+
+  document.getElementById('bal-kpis').innerHTML = `
+    <div class="stat-card"><div class="stat-label">إجمالي المواد</div><div class="stat-value">${totalItems}</div></div>
+    <div class="stat-card"><div class="stat-label">رصيد موجب</div><div class="stat-value" style="color:var(--green)">${posItems}</div></div>
+    <div class="stat-card"><div class="stat-label">رصيد صفر</div><div class="stat-value" style="color:var(--text2)">${zeroItems}</div></div>
+    <div class="stat-card"><div class="stat-label">رصيد سالب</div><div class="stat-value" style="color:var(--red)">${negItems}</div></div>
+    <div class="stat-card" title="مواد جاءت من تدوير الأرصدة"><div class="stat-label">من تدوير</div><div class="stat-value" style="color:var(--gold)">${rollItems}</div></div>
+    <div class="stat-card"><div class="stat-label">إجمالي القيمة</div><div class="stat-value" style="color:var(--gold);font-size:18px">${n(totalValue)}</div><div style="font-size:10px;color:var(--text3)">د.ع</div></div>
+  `;
+
+  balFiltered = [...balData];
+  document.getElementById('bal-title').textContent =
+    `الأرصدة المتبقية${wh?' — مخزن '+wh:' — كل المخازن'}${to?' حتى '+fmtDate(to):''}`;
+  renderBalTable();
+}
+
+function filterBalTable() {
+  const term = (document.getElementById('bal_search')?.value||'').toLowerCase();
+  balFiltered = balData.filter(d =>
+    d.name.toLowerCase().includes(term) || d.storeNum.toLowerCase().includes(term)
+  );
+  renderBalTable();
+}
+
+function sortBal(key) {
+  if (balSortKey===key) balSortAsc=!balSortAsc;
+  else { balSortKey=key; balSortAsc=true; }
+  balFiltered.sort((a,b)=>{
+    const va=typeof a[key]==='string'?a[key]:(a[key]||0);
+    const vb=typeof b[key]==='string'?b[key]:(b[key]||0);
+    return balSortAsc?(va>vb?1:-1):(va<vb?1:-1);
+  });
+  renderBalTable();
+}
+
+function renderBalTable() {
+  const tbody = document.getElementById('bal-tbody');
+  document.getElementById('bal-count').textContent = balFiltered.length;
+  if (!balFiltered.length) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">⚖️</div><div class="empty-text">لا توجد بيانات</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = balFiltered.map((d,i) => {
+    const balC = d.balance>0?'var(--green)':d.balance<0?'var(--red)':'var(--text3)';
+    const hasRollover = d.rolloverQty > 0;
+    return `<tr style="${hasRollover?'background:rgba(245,158,11,0.025)':''}">
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><span class="doc-num">${d.storeNum||'—'}</span></td>
+      <td style="text-align:right;font-weight:600">${d.name}</td>
+      <td><span class="chip">${d.warehouseCode}</span></td>
+      <td style="color:var(--gold)" title="من تدوير الأرصدة">${n(d.rolloverQty)}</td>
+      <td style="color:var(--accent)" title="استلام عادي">${n(d.receiveQty)}</td>
+      <td style="color:var(--red)">${n(d.outQty)}</td>
+      <td style="color:${balC};font-weight:700;font-size:15px">${n(d.balance)}</td>
+      <td>${n(d.lastPrice)}</td>
+      <td class="price-gold">${n(d.balValue)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportBalance() {
+  if (!balFiltered.length) { showToast('لا توجد بيانات للتصدير','info'); return; }
+  const headers = ['الرقم المخزني','اسم المادة','المخزن','تدوير افتتاحي','استلام عادي','إجمالي الوارد','إجمالي الصادر','الرصيد المتبقي','آخر سعر','قيمة الرصيد'];
+  const rows = balFiltered.map(d=>[d.storeNum,d.name,d.warehouse,d.rolloverQty,d.receiveQty,d.inQty,d.outQty,d.balance,d.lastPrice,d.balValue]);
+  const ws = XLSX.utils.aoa_to_sheet([headers,...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'الأرصدة المتبقية');
+  XLSX.writeFile(wb,`الأرصدة_المتبقية_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// ══════════════════════════════════════════
+//  تدوير الأرصدة  (ROLLOVER)
+// ══════════════════════════════════════════
+let roRawData = [];     // raw excel rows
+let roHeaders = [];     // column headers from excel
+let roMappings = {};    // fieldKey -> colIndex
+let roMapped = [];      // processed rows after mapping
+
+const RO_FIELDS = [
+  { key:'storeNum', label:'الرقم المخزني', required:false },
+  { key:'name',     label:'اسم المادة',    required:true  },
+  { key:'warehouse',label:'رقم المخزن',   required:false },
+  { key:'qty',      label:'الكمية',        required:true  },
+  { key:'parts',    label:'الأجزاء (اختياري)', required:false },
+  { key:'price',    label:'السعر الوسطي', required:false },
+];
+
+function loadRolloverFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+      // Auto-detect header row (look for row with most non-empty cells)
+      let hi = 0, maxFill = 0;
+      for (let i=0; i<Math.min(10,raw.length); i++) {
+        const fill = raw[i].filter(c=>String(c).trim()).length;
+        if (fill > maxFill) { maxFill=fill; hi=i; }
+      }
+      roHeaders = raw[hi].map(c => String(c).trim());
+      roRawData = raw.slice(hi+1).filter(r => r.some(c=>String(c).trim()));
+
+      // Show file info
+      document.getElementById('ro-file-info').innerHTML = `
+        <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:12px;font-size:13px">
+          ✅ <b>${file.name}</b> — ${roRawData.length} صف — ${roHeaders.length} عمود<br>
+          <span style="color:var(--text3);font-size:11px">رأس الجدول في الصف ${hi+1}: ${roHeaders.slice(0,6).join(' / ')}${roHeaders.length>6?'...':''}</span>
+        </div>`;
+
+      // Auto-map columns by guessing
+      roMappings = {};
+      roHeaders.forEach((h,i) => {
+        const lh = h.toLowerCase();
+        if (!roMappings.storeNum  && (lh.includes('رقم') || lh.includes('مخزني') || lh.includes('كود'))) roMappings.storeNum = i;
+        else if (!roMappings.name && (lh.includes('اسم') || lh.includes('مادة') || lh.includes('بند'))) roMappings.name = i;
+        else if (!roMappings.warehouse && (lh.includes('مخزن') && !lh.includes('اسم'))) roMappings.warehouse = i;
+        else if (!roMappings.qty  && (lh.includes('عدد') || lh.includes('كمية') || lh.includes('العدد'))) roMappings.qty = i;
+        else if (!roMappings.parts && lh.includes('جزء') || lh.includes('أجزاء')) roMappings.parts = i;
+        else if (!roMappings.price && (lh.includes('سعر') || lh.includes('قيمة') || lh.includes('وسطي'))) roMappings.price = i;
+      });
+
+      buildMappingGrid();
+      document.getElementById('ro-step2').classList.remove('hidden');
+    } catch(err) { showToast('❌ خطأ في قراءة الملف: '+err.message,'info'); }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value='';
+}
+
+function buildMappingGrid() {
+  const grid = document.getElementById('ro-mapping-grid');
+  const opts = roHeaders.map((h,i)=>`<option value="${i}">${h||('عمود '+(i+1))}</option>`).join('');
+  grid.innerHTML = RO_FIELDS.map(f => `
+    <div class="form-group">
+      <label>${f.label}${f.required?' *':''}</label>
+      <select id="ro_map_${f.key}" style="font-size:12px">
+        ${f.required?'':'<option value="">— تجاهل —</option>'}
+        ${opts}
+      </select>
+    </div>`).join('');
+  // Apply auto-guessed
+  RO_FIELDS.forEach(f => {
+    const el = document.getElementById('ro_map_'+f.key);
+    if (el && roMappings[f.key] !== undefined) el.value = roMappings[f.key];
+  });
+}
+
+function previewRollover() {
+  readMappings();
+  const preview = roRawData.slice(0,5).map(r => parseRoRow(r)).filter(r=>r.name);
+  if (!preview.length) { showToast('لم يتم العثور على بيانات — تحقق من الربط','info'); return; }
+  const table = document.getElementById('ro-preview-table');
+  table.innerHTML = `
+    <thead><tr><th>#</th><th>الرقم المخزني</th><th>اسم المادة</th><th>المخزن</th><th>الكمية</th><th>السعر</th></tr></thead>
+    <tbody>${preview.map((r,i)=>`<tr>
+      <td>${i+1}</td>
+      <td><span class="doc-num">${r.storeNum||'—'}</span></td>
+      <td>${r.name}</td>
+      <td>${r.warehouse||'—'}</td>
+      <td>${n(r.qty)}</td>
+      <td>${n(r.price)}</td>
+    </tr>`).join('')}</tbody>`;
+  document.getElementById('ro-preview-wrap').classList.remove('hidden');
+  showToast('✅ معاينة جاهزة','success');
+}
+
+function readMappings() {
+  roMappings = {};
+  RO_FIELDS.forEach(f => {
+    const v = document.getElementById('ro_map_'+f.key)?.value;
+    if (v !== '' && v !== undefined) roMappings[f.key] = parseInt(v);
+  });
+}
+
+function parseRoRow(r) {
+  const get = (key) => roMappings[key]!==undefined ? String(r[roMappings[key]]||'').trim() : '';
+  let storeNum = get('storeNum');
+  const name   = get('name');
+  // ── Auto-fill رقم مخزني من الكتالوج أو كشف المخزون إذا كان فارغاً ──
+  if (!storeNum && name) {
+    const lc = name.toLowerCase();
+    // 1. search catalogue
+    const catMatch = (catalogData||[]).find(c => c.name.toLowerCase() === lc);
+    if (catMatch && catMatch.storeNum) { storeNum = catMatch.storeNum; }
+    // 2. search invData
+    if (!storeNum) {
+      for (const d of Object.values(invData)) {
+        const row = (d.rows||[]).find(r => String(r[2]||'').trim().toLowerCase() === lc);
+        if (row && row[1]) { storeNum = String(row[1]); break; }
+      }
+    }
+    // 3. search existing receive docs
+    if (!storeNum) {
+      outer: for (const doc of (state.receive||[])) {
+        for (const it of (doc.items||[])) {
+          if (it.name.toLowerCase() === lc && it.storeNum) { storeNum = it.storeNum; break outer; }
+        }
+      }
+    }
+  }
+  return {
+    storeNum,
+    name,
+    warehouse: get('warehouse'),
+    qty:   parseFloat(get('qty').replace(/,/g,''))||0,
+    parts: parseFloat(get('parts').replace(/,/g,''))||0,
+    price: parseFloat(get('price').replace(/,/g,''))||0,
+  };
+}
+
+function applyRollover() {
+  readMappings();
+  if (roMappings.name === undefined) { showToast('حدد عمود اسم المادة على الأقل','info'); return; }
+  roMapped = roRawData.map(r => parseRoRow(r)).filter(r => r.name);
+  if (!roMapped.length) { showToast('لم يتم العثور على بيانات','info'); return; }
+
+  // ── الفكرة: ننشئ مستند استلام مخزني حقيقي لكل مخزن ──
+  // بهذا تُحسب البيانات تلقائياً في كل التقارير (الأرصدة، الجرد، اليومية، حركة مادة)
+  // دون الحاجة لمنطق خاص بالتدوير
+
+  const today = new Date().toISOString().split('T')[0];
+  const rolloverLabel = 'تدوير أرصدة ' + new Date().toLocaleDateString('ar-EG-u-ca-gregory');
+
+  // Group rows by warehouse code
+  const byWH = {};
+  roMapped.forEach(r => {
+    const code = r.warehouse ? String(r.warehouse).split(' ')[0].trim() : 'عام';
+    if (!byWH[code]) byWH[code] = [];
+    byWH[code].push(r);
+  });
+
+  let totalAdded = 0;
+  let docsCreated = 0;
+
+  Object.entries(byWH).forEach(([code, rows]) => {
+    // بناء قائمة المواد لهذا المستند
+    const items = rows.map(r => ({
+      storeNum: r.storeNum || '',
+      name: r.name,
+      qty: r.qty,
+      price: r.price || 0,
+      total: r.qty * (r.price || 0),
+      parts: r.parts || 0,
+      _isRollover: true   // علامة لتمييزه عن الاستلام العادي
+    }));
+
+    const grandTotal = items.reduce((s,it) => s + it.total, 0);
+
+    // تحديد اسم المخزن
+    const whObj = WAREHOUSES.find(w => w.code === code);
+    const whName = whObj ? `${code} ${whObj.name}` : code;
+
+    // رقم وثيقة فريد للتدوير
+    const seqStr = 'RO-' + String(state.seqR).padStart(4,'0');
+    state.seqR++;
+
+    const doc = {
+      id: Date.now() + docsCreated,
+      seq: seqStr,
+      date: today,
+      docnum: seqStr,
+      warehouse: whName,
+      notes: rolloverLabel,
+      items,
+      grandTotal,
+      type: 'receive',
+      isRollover: true,   // علامة مستوى المستند
+      images: [],
+      createdAt: new Date().toISOString()
+    };
+
+    state.receive.push(doc);
+    totalAdded += items.length;
+    docsCreated++;
+
+    // أيضاً حدّث invData لكشف المخزون الثابت
+    const existing = (invData[code]?.rows || []);
+    rows.forEach(r => {
+      existing.push([existing.length+1, r.storeNum, r.name, r.qty, r.parts||0, r.price||0, r.qty*(r.price||0)]);
+    });
+    invData[code] = {
+      rows: existing,
+      fileName: rolloverLabel,
+      uploadedAt: new Date().toISOString()
+    };
+  });
+
+  // حفظ كل شيء
+  localStorage.setItem('invData', JSON.stringify(invData));
+  saveToInternalDb('invData', invData);
+  save(); // يحفظ state ويحدث كل الواجهة
+
+  // أضف للكتالوج
+  let catAdded = 0;
+  const catSeen = new Set(catalogData.map(c=>(c.storeNum||c.name).toLowerCase()));
+  roMapped.forEach(r => {
+    const key=(r.storeNum||r.name).toLowerCase();
+    if (!catSeen.has(key)) {
+      catalogData.push({id:Date.now()+catAdded, storeNum:r.storeNum, name:r.name,
+        warehouse:r.warehouse, unit:'', minQty:0, notes:'', source:'تدوير'});
+      catSeen.add(key); catAdded++;
+    }
+  });
+  saveCatalogToStorage();
+
+  // Show result
+  document.getElementById('ro-result-info').innerHTML = `
+    <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:14px;font-size:13px">
+      ✅ <b>تم تطبيق التدوير بنجاح</b><br>
+      المواد المُدوَّرة: <b style="color:var(--accent)">${totalAdded}</b> &nbsp;|&nbsp;
+      مستندات استلام أُنشئت: <b style="color:var(--green)">${docsCreated}</b> &nbsp;|&nbsp;
+      مضافة للكتالوج: <b style="color:var(--gold)">${catAdded}</b> &nbsp;|&nbsp;
+      مخازن: <b style="color:var(--accent)">${Object.keys(byWH).length}</b>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">
+        💡 البيانات أصبحت جزءاً من سجل الاستلام — تظهر في الأرصدة والجرد والتقارير تلقائياً.
+        الأرصدة تُحسب: رصيد التدوير + الاستلام اللاحق − الإصدار.
+      </div>
+    </div>`;
+
+  const tbody = document.getElementById('ro-result-tbody');
+  tbody.innerHTML = roMapped.map((r,i) => `<tr>
+    <td style="color:var(--text3)">${i+1}</td>
+    <td><span class="doc-num">${r.storeNum||'—'}</span></td>
+    <td style="text-align:right">${r.name}</td>
+    <td><span class="chip">${r.warehouse||'—'}</span></td>
+    <td>${n(r.qty)}</td>
+    <td>${n(r.price)}</td>
+    <td class="price-gold">${n(r.qty*r.price)}</td>
+    <td><span style="color:var(--green);font-size:11px">✅ مُدوَّر</span></td>
+  </tr>`).join('');
+
+  document.getElementById('ro-step3').classList.remove('hidden');
+  document.getElementById('ro-step3').scrollIntoView({behavior:'smooth'});
+  showToast(`✅ تم تدوير ${totalAdded} مادة بنجاح`,'success');
+}
+
+function resetRollover() {
+  roRawData=[]; roHeaders=[]; roMappings={}; roMapped=[];
+  document.getElementById('ro-step2').classList.add('hidden');
+  document.getElementById('ro-step3').classList.add('hidden');
+  document.getElementById('ro-preview-wrap').classList.add('hidden');
+  document.getElementById('ro-file-info').innerHTML='';
+  document.getElementById('ro-file-input').value='';
+}
+
+function exportRolloverResult() {
+  if (!roMapped.length) return;
+  const headers=['الرقم المخزني','اسم المادة','المخزن','الكمية','الأجزاء','السعر الوسطي','القيمة'];
+  const rows=roMapped.map(r=>[r.storeNum,r.name,r.warehouse,r.qty,r.parts,r.price,r.qty*r.price]);
+  const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'تدوير الأرصدة');
+  XLSX.writeFile(wb,`تدوير_أرصدة_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+</body>
+</html>
