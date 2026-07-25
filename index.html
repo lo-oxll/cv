@@ -62,25 +62,6 @@
   <main class="card" id="card">
     <div class="card__band"></div>
 
-    <!-- ============ STICKY NAV ============ -->
-    <nav class="site-nav" aria-label="التنقل الرئيسي">
-      <a class="site-nav__mark" href="#hero">
-        <span class="dot" aria-hidden="true"></span> علي كامل
-      </a>
-      <div class="site-nav__links" role="list">
-        <a class="site-nav__link is-active" href="#about">نبذة</a>
-        <a class="site-nav__link" href="#experience">الخبرة</a>
-        <a class="site-nav__link" href="#education">التعليم</a>
-        <a class="site-nav__link" href="#skills">المهارات</a>
-        <a class="site-nav__link" href="#projects">المشاريع</a>
-        <a class="site-nav__link" href="#contact">التواصل</a>
-      </div>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي والنهاري">
-        <i class="fa-solid fa-sun" aria-hidden="true"></i>
-        <i class="fa-solid fa-moon" aria-hidden="true"></i>
-      </button>
-    </nav>
-
     <!-- ============ HERO ============ -->
     <section class="hero" id="hero">
       <svg class="hero__map" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
@@ -148,8 +129,30 @@
       </div>
     </section>
 
+    <!-- ============ SECTION NAV (tabs) ============ -->
+    <nav class="site-nav" aria-label="التنقل بين الأقسام">
+      <a class="site-nav__mark" href="#hero">
+        <span class="dot" aria-hidden="true"></span> علي كامل
+      </a>
+      <div class="site-nav__links" role="tablist">
+        <button class="site-nav__link" type="button" data-tab-target="about" role="tab" aria-selected="false" aria-controls="about">نبذة</button>
+        <button class="site-nav__link" type="button" data-tab-target="experience" role="tab" aria-selected="false" aria-controls="experience">الخبرة</button>
+        <button class="site-nav__link" type="button" data-tab-target="education" role="tab" aria-selected="false" aria-controls="education">التعليم</button>
+        <button class="site-nav__link" type="button" data-tab-target="skills" role="tab" aria-selected="false" aria-controls="skills">المهارات</button>
+        <button class="site-nav__link" type="button" data-tab-target="projects" role="tab" aria-selected="false" aria-controls="projects">المشاريع</button>
+        <button class="site-nav__link" type="button" data-tab-target="contact" role="tab" aria-selected="false" aria-controls="contact">التواصل</button>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي والنهاري">
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      </button>
+    </nav>
+
+    <!-- ============ TAB PANELS ============ -->
+    <div class="tab-panels" id="tabPanels">
+
     <!-- ============ ABOUT ============ -->
-    <section class="section about reveal" id="about">
+    <section class="section about tab-panel" id="about" role="tabpanel" hidden>
       <div class="section-label">نبذة عني</div>
       <p>
         متخصص في إدارة تقنيات المعلومات (ITM) يجمع بين خبرة ميدانية في صيانة شبكات
@@ -161,7 +164,7 @@
     </section>
 
     <!-- ============ EXPERIENCE ============ -->
-    <section class="section experience reveal" id="experience">
+    <section class="section experience tab-panel" id="experience" role="tabpanel" hidden>
       <div class="section-label">الخبرة المهنية</div>
       <ul class="timeline">
         <li>
@@ -198,7 +201,7 @@
     </section>
 
     <!-- ============ EDUCATION ============ -->
-    <section class="section education reveal" id="education">
+    <section class="section education tab-panel" id="education" role="tabpanel" hidden>
       <div class="section-label">التعليم</div>
       <div class="edu-list">
         <div class="edu-item">
@@ -221,7 +224,7 @@
     </section>
 
     <!-- ============ SKILLS ============ -->
-    <section class="section skills reveal" id="skills">
+    <section class="section skills tab-panel" id="skills" role="tabpanel" hidden>
       <div class="section-label">المهارات</div>
 
       <div class="skill-group">
@@ -254,7 +257,7 @@
     </section>
 
     <!-- ============ PROJECTS ============ -->
-    <section class="section projects reveal" id="projects">
+    <section class="section projects tab-panel" id="projects" role="tabpanel" hidden>
       <div class="section-label">المشاريع على GitHub</div>
       <p class="contact-lead">جميع المستودعات العامة في حسابي — بعضها أنظمة إدارة مخازن وحسابات، وبعضها متاجر إلكترونية ومشاريع تجريبية.</p>
 
@@ -370,7 +373,7 @@
     </section>
 
     <!-- ============ CONTACT ============ -->
-    <section class="section contact reveal" id="contact">
+    <section class="section contact tab-panel" id="contact" role="tabpanel" hidden>
       <div class="section-label">التواصل</div>
       <p class="contact-lead">متاح للتواصل بخصوص فرص العمل أو المشاريع المشتركة. أسرع وسيلة هي البريد الإلكتروني أو الهاتف.</p>
 
@@ -404,6 +407,8 @@
         </a>
       </div>
     </section>
+
+    </div>
 
     <div class="card__footer">
       <span>© 2026 Ali Kamil Yaseen. All rights reserved.</span>

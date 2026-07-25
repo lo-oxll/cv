@@ -134,11 +134,14 @@ body::before {
   justify-content: space-between;
   gap: 10px;
   padding: 10px clamp(16px, 5vw, 32px);
-  padding-top: max(10px, env(safe-area-inset-top));
   background: var(--nav-bg);
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border-top: 1px solid var(--border-line);
   border-bottom: 1px solid var(--border-line);
+  margin: 0 auto;
+  max-width: var(--max-width);
+  width: 100%;
 }
 
 .site-nav__mark {
@@ -794,68 +797,73 @@ h1 {
 .card__footer span { direction: ltr; }
 
 /* ============================================
-   Scroll reveal
+   Tab panels — one section visible at a time,
+   switched via the section nav buttons
    ============================================ */
-.reveal {
+.tab-panels { width: 100%; }
+
+.tab-panel[hidden] { display: none; }
+
+.tab-panel {
   opacity: 0;
   transform: translateY(22px);
-  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: opacity 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.tab-panel.is-visible { opacity: 1; transform: translateY(0); }
 
-.reveal .timeline > li,
-.reveal .edu-list > .edu-item,
-.reveal .skill-group,
-.reveal .skill-tags > .skill-tag,
-.reveal .link-grid > .btn,
-.reveal .project-grid > .project-card {
+.tab-panel .timeline > li,
+.tab-panel .edu-list > .edu-item,
+.tab-panel .skill-group,
+.tab-panel .skill-tags > .skill-tag,
+.tab-panel .link-grid > .btn,
+.tab-panel .project-grid > .project-card {
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: opacity 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.reveal.is-visible .timeline > li,
-.reveal.is-visible .edu-list > .edu-item,
-.reveal.is-visible .skill-group,
-.reveal.is-visible .skill-tags > .skill-tag,
-.reveal.is-visible .link-grid > .btn,
-.reveal.is-visible .project-grid > .project-card {
+.tab-panel.is-visible .timeline > li,
+.tab-panel.is-visible .edu-list > .edu-item,
+.tab-panel.is-visible .skill-group,
+.tab-panel.is-visible .skill-tags > .skill-tag,
+.tab-panel.is-visible .link-grid > .btn,
+.tab-panel.is-visible .project-grid > .project-card {
   opacity: 1;
   transform: translateY(0);
 }
 
-.reveal .timeline > li:nth-child(1) { transition-delay: 0.05s; }
-.reveal .timeline > li:nth-child(2) { transition-delay: 0.18s; }
-.reveal .timeline > li:nth-child(3) { transition-delay: 0.31s; }
+.tab-panel .timeline > li:nth-child(1) { transition-delay: 0.05s; }
+.tab-panel .timeline > li:nth-child(2) { transition-delay: 0.14s; }
+.tab-panel .timeline > li:nth-child(3) { transition-delay: 0.23s; }
 
-.reveal .edu-list > .edu-item:nth-child(1) { transition-delay: 0.05s; }
-.reveal .edu-list > .edu-item:nth-child(2) { transition-delay: 0.16s; }
+.tab-panel .edu-list > .edu-item:nth-child(1) { transition-delay: 0.05s; }
+.tab-panel .edu-list > .edu-item:nth-child(2) { transition-delay: 0.13s; }
 
-.reveal .skill-group:nth-child(1) { transition-delay: 0.05s; }
-.reveal .skill-group:nth-child(2) { transition-delay: 0.14s; }
-.reveal .skill-group:nth-child(3) { transition-delay: 0.23s; }
+.tab-panel .skill-group:nth-child(1) { transition-delay: 0.05s; }
+.tab-panel .skill-group:nth-child(2) { transition-delay: 0.12s; }
+.tab-panel .skill-group:nth-child(3) { transition-delay: 0.19s; }
 
-.reveal .skill-tags > .skill-tag:nth-child(1) { transition-delay: 0.05s; }
-.reveal .skill-tags > .skill-tag:nth-child(2) { transition-delay: 0.11s; }
-.reveal .skill-tags > .skill-tag:nth-child(3) { transition-delay: 0.17s; }
-.reveal .skill-tags > .skill-tag:nth-child(4) { transition-delay: 0.23s; }
-.reveal .skill-tags > .skill-tag:nth-child(5) { transition-delay: 0.29s; }
+.tab-panel .skill-tags > .skill-tag:nth-child(1) { transition-delay: 0.05s; }
+.tab-panel .skill-tags > .skill-tag:nth-child(2) { transition-delay: 0.1s; }
+.tab-panel .skill-tags > .skill-tag:nth-child(3) { transition-delay: 0.15s; }
+.tab-panel .skill-tags > .skill-tag:nth-child(4) { transition-delay: 0.2s; }
+.tab-panel .skill-tags > .skill-tag:nth-child(5) { transition-delay: 0.25s; }
 
-.reveal .link-grid > .btn:nth-child(1) { transition-delay: 0.05s; }
-.reveal .link-grid > .btn:nth-child(2) { transition-delay: 0.1s; }
-.reveal .link-grid > .btn:nth-child(3) { transition-delay: 0.15s; }
-.reveal .link-grid > .btn:nth-child(4) { transition-delay: 0.2s; }
-.reveal .link-grid > .btn:nth-child(5) { transition-delay: 0.25s; }
-.reveal .link-grid > .btn:nth-child(6) { transition-delay: 0.3s; }
-.reveal .link-grid > .btn:nth-child(7) { transition-delay: 0.35s; }
+.tab-panel .link-grid > .btn:nth-child(1) { transition-delay: 0.05s; }
+.tab-panel .link-grid > .btn:nth-child(2) { transition-delay: 0.09s; }
+.tab-panel .link-grid > .btn:nth-child(3) { transition-delay: 0.13s; }
+.tab-panel .link-grid > .btn:nth-child(4) { transition-delay: 0.17s; }
+.tab-panel .link-grid > .btn:nth-child(5) { transition-delay: 0.21s; }
+.tab-panel .link-grid > .btn:nth-child(6) { transition-delay: 0.25s; }
+.tab-panel .link-grid > .btn:nth-child(7) { transition-delay: 0.29s; }
 
 .timeline li::before {
   transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
 }
-.reveal.is-visible .timeline > li:nth-child(1)::before { transition-delay: 0.25s; }
-.reveal.is-visible .timeline > li:nth-child(2)::before { transition-delay: 0.38s; }
-.reveal.is-visible .timeline > li:nth-child(3)::before { transition-delay: 0.51s; }
-.reveal.is-visible .timeline > li::before {
+.tab-panel.is-visible .timeline > li:nth-child(1)::before { transition-delay: 0.2s; }
+.tab-panel.is-visible .timeline > li:nth-child(2)::before { transition-delay: 0.3s; }
+.tab-panel.is-visible .timeline > li:nth-child(3)::before { transition-delay: 0.4s; }
+.tab-panel.is-visible .timeline > li::before {
   background: var(--metal-gradient);
   border-color: transparent;
   transform: scale(1.15);
@@ -865,13 +873,13 @@ h1 {
   .card { animation: none !important; opacity: 1 !important; transform: none !important; }
   .seal::before { animation: none; }
   .btn:active, .btn:hover, .cta-btn:hover, .edu-item:hover, .skill-tag:hover { transform: none; }
-  .reveal,
-  .reveal .timeline > li,
-  .reveal .edu-list > .edu-item,
-  .reveal .skill-group,
-  .reveal .skill-tags > .skill-tag,
-  .reveal .link-grid > .btn,
-  .reveal .project-grid > .project-card,
+  .tab-panel,
+  .tab-panel .timeline > li,
+  .tab-panel .edu-list > .edu-item,
+  .tab-panel .skill-group,
+  .tab-panel .skill-tags > .skill-tag,
+  .tab-panel .link-grid > .btn,
+  .tab-panel .project-grid > .project-card,
   .timeline li::before {
     opacity: 1 !important;
     transform: none !important;

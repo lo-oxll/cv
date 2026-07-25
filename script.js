@@ -3,8 +3,9 @@
  * Dependency-free enhancement layer:
  *  - light/dark theme toggle (persisted)
  *  - reveals the hero card once fonts/layout are ready
- *  - reveals sections on scroll
- *  - sticky nav with smooth scroll + scrollspy (active link tracking)
+ *  - section nav acts as tabs: each button shows exactly one
+ *    panel (About / Experience / Education / Skills / Projects / Contact)
+ *    and hides the rest — nothing is shown until a tab is picked
  *  - respects prefers-reduced-motion throughout
  */
 (function () {
@@ -64,82 +65,80 @@
     }
   }
 
-  // ---- Section scroll reveal ----
-  var sections = document.querySelectorAll('.reveal');
+  // ---- Section nav as tabs ----
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.site-nav__link'));
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+  var navBar = document.querySelector('.site-nav__links');
+  var homeMark = document.querySelector('.site-nav__mark');
 
-  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
-    sections.forEach(function (el) { el.classList.add('is-visible'); });
-  } else {
-    var revealObserver = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            revealObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-    );
-    sections.forEach(function (el) { revealObserver.observe(el); });
+  function closeAllTabs() {
+    panels.forEach(function (panel) {
+      panel.classList.remove('is-visible');
+      panel.hidden = true;
+    });
+    navLinks.forEach(function (link) {
+      link.classList.remove('is-active');
+      link.setAttribute('aria-selected', 'false');
+    });
   }
 
-  // ---- Sticky nav: smooth scroll + active-link tracking ----
-  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.site-nav__link'));
-  var navTargets = navLinks
-    .map(function (link) {
-      var id = link.getAttribute('href');
-      if (!id || id.charAt(0) !== '#') return null;
-      var target = document.getElementById(id.slice(1));
-      return target ? { link: link, target: target } : null;
-    })
-    .filter(Boolean);
+  function openTab(name) {
+    var found = false;
+    panels.forEach(function (panel) {
+      if (panel.id === name) {
+        found = true;
+        panel.hidden = false;
+        if (prefersReducedMotion) {
+          panel.classList.add('is-visible');
+        } else {
+          // Force layout so the fade-in transition replays every time.
+          panel.classList.remove('is-visible');
+          void panel.offsetWidth;
+          requestAnimationFrame(function () {
+            panel.classList.add('is-visible');
+          });
+        }
+      } else {
+        panel.classList.remove('is-visible');
+        panel.hidden = true;
+      }
+    });
+    if (!found) return false;
+    navLinks.forEach(function (link) {
+      var isMatch = link.getAttribute('data-tab-target') === name;
+      link.classList.toggle('is-active', isMatch);
+      link.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+    });
+    return true;
+  }
 
-  // Click = smooth scroll to the section (delegated, so it always works
-  // even if links are added/removed later).
-  var navBar = document.querySelector('.site-nav__links');
   if (navBar) {
     navBar.addEventListener('click', function (event) {
-      var link = event.target.closest('.site-nav__link');
-      if (!link) return;
-      var href = link.getAttribute('href');
-      if (!href || href.charAt(0) !== '#') return;
-      var target = document.getElementById(href.slice(1));
-      if (!target) return;
-      event.preventDefault();
-      target.scrollIntoView({
-        behavior: prefersReducedMotion ? 'auto' : 'smooth',
-        block: 'start'
-      });
-      // Update the URL hash without an extra jump.
-      if (history.pushState) {
-        history.pushState(null, '', href);
+      var btn = event.target.closest('[data-tab-target]');
+      if (!btn) return;
+      var name = btn.getAttribute('data-tab-target');
+      var wasActive = btn.classList.contains('is-active');
+      if (wasActive) {
+        // Tapping the open tab again closes it and returns to the home view.
+        closeAllTabs();
+        if (history.replaceState) history.replaceState(null, '', '#hero');
+      } else {
+        openTab(name);
+        if (history.replaceState) history.replaceState(null, '', '#' + name);
       }
-      setActiveLink(link);
     });
   }
 
-  function setActiveLink(activeLink) {
-    navLinks.forEach(function (link) {
-      var isMatch = link === activeLink;
-      link.classList.toggle('is-active', isMatch);
-      link.setAttribute('aria-current', isMatch ? 'true' : 'false');
+  if (homeMark) {
+    homeMark.addEventListener('click', function () {
+      closeAllTabs();
     });
   }
 
-  // Scrollspy: highlight the nav link for whichever section is in view.
-  if (navTargets.length && 'IntersectionObserver' in window) {
-    var spy = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            var match = navTargets.find(function (item) { return item.target === entry.target; });
-            if (match) setActiveLink(match.link);
-          }
-        });
-      },
-      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
-    );
-    navTargets.forEach(function (item) { spy.observe(item.target); });
+  // Deep-link support: if the page is opened with e.g. #education,
+  // open that tab directly instead of showing the empty home view.
+  var initialHash = window.location.hash ? window.location.hash.slice(1) : '';
+  if (initialHash && initialHash !== 'hero') {
+    openTab(initialHash);
   }
 })();
