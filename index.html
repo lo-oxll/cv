@@ -22,10 +22,20 @@
 </head>
 
 <body>
+  <div class="scroll-progress" id="scrollProgress"></div>
+
   <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي والنهاري">
     <i class="fa-solid fa-sun" aria-hidden="true"></i>
     <i class="fa-solid fa-moon" aria-hidden="true"></i>
   </button>
+
+  <nav class="dot-nav" aria-label="التنقل بين الأقسام">
+    <a href="#about" class="dot-nav__item" data-label="نبذة عني" data-target="about"></a>
+    <a href="#experience" class="dot-nav__item" data-label="الخبرة" data-target="experience"></a>
+    <a href="#education" class="dot-nav__item" data-label="التعليم" data-target="education"></a>
+    <a href="#skills" class="dot-nav__item" data-label="المهارات" data-target="skills"></a>
+    <a href="#contact" class="dot-nav__item" data-label="التواصل" data-target="contact"></a>
+  </nav>
 
   <main class="card" id="card">
     <div class="card__band"></div>
@@ -53,7 +63,7 @@
     </section>
 
     <!-- ============ ABOUT ============ -->
-    <section class="section about reveal">
+    <section class="section about reveal" id="about" data-section="about">
       <div class="section-label">نبذة عني</div>
       <p>
         متخصص في إدارة تقنيات المعلومات (ITM) يجمع بين خبرة ميدانية في صيانة شبكات
@@ -65,7 +75,7 @@
     </section>
 
     <!-- ============ EXPERIENCE ============ -->
-    <section class="section reveal">
+    <section class="section reveal" id="experience" data-section="experience">
       <div class="section-label">الخبرة المهنية</div>
       <ul class="timeline">
         <li>
@@ -102,7 +112,7 @@
     </section>
 
     <!-- ============ EDUCATION ============ -->
-    <section class="section section--alt reveal">
+    <section class="section section--alt reveal" id="education" data-section="education">
       <div class="section-inner">
         <div class="section-label">التعليم</div>
         <div class="edu-list">
@@ -121,7 +131,7 @@
     </section>
 
     <!-- ============ SKILLS ============ -->
-    <section class="section reveal">
+    <section class="section reveal" id="skills" data-section="skills">
       <div class="section-label">المهارات</div>
 
       <div class="skill-group">
@@ -154,7 +164,7 @@
     </section>
 
     <!-- ============ CONTACT ============ -->
-    <section class="section section--alt reveal">
+    <section class="section section--alt reveal" id="contact" data-section="contact">
       <div class="section-inner">
         <div class="section-label">التواصل</div>
 

@@ -63,6 +63,47 @@
     }
   }
 
+  // ---- Scroll progress bar ----
+  var progressBar = document.getElementById('scrollProgress');
+  var scrollHost = card || document.documentElement;
+
+  function updateProgress() {
+    if (!progressBar) return;
+    var scrollTop = scrollHost.scrollTop;
+    var scrollHeight = scrollHost.scrollHeight - scrollHost.clientHeight;
+    var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+
+  if (progressBar && scrollHost) {
+    scrollHost.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+  }
+
+  // ---- Dot navigation: smooth scroll + active state ----
+  var dotItems = document.querySelectorAll('.dot-nav__item');
+  var namedSections = document.querySelectorAll('[data-section]');
+
+  dotItems.forEach(function (dot) {
+    dot.addEventListener('click', function (e) {
+      var targetId = dot.getAttribute('href');
+      var targetEl = targetId && document.querySelector(targetId);
+      if (targetEl) {
+        e.preventDefault();
+        targetEl.scrollIntoView({
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+
+  function setActiveDot(name) {
+    dotItems.forEach(function (dot) {
+      dot.classList.toggle('is-active', dot.getAttribute('data-target') === name);
+    });
+  }
+
   // ---- Section scroll reveal ----
   var sections = document.querySelectorAll('.reveal');
 
@@ -71,17 +112,31 @@
     return;
   }
 
-  var observer = new IntersectionObserver(
+  var revealObserver = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
+          revealObserver.unobserve(entry.target);
         }
       });
     },
     { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
   );
 
-  sections.forEach(function (el) { observer.observe(el); });
+  sections.forEach(function (el) { revealObserver.observe(el); });
+
+  if (namedSections.length && dotItems.length) {
+    var activeObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            setActiveDot(entry.target.getAttribute('data-section'));
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    namedSections.forEach(function (el) { activeObserver.observe(el); });
+  }
 })();

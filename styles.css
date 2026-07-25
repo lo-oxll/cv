@@ -454,6 +454,81 @@ h1 {
 }
 
 /* ============================================
+   Scroll progress bar
+   ============================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  inset-inline-start: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--metal-gradient);
+  background-size: 200% 100%;
+  z-index: 30;
+  transition: width 0.1s linear;
+}
+
+/* ============================================
+   Dot navigation
+   ============================================ */
+.dot-nav {
+  position: fixed;
+  top: 50%;
+  inset-inline-end: 22px;
+  transform: translateY(-50%);
+  z-index: 15;
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .dot-nav { display: flex; }
+}
+
+.dot-nav__item {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--silver-dark);
+  background: transparent;
+  transition: background-color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+
+.dot-nav__item:hover { border-color: var(--fg-heading); transform: scale(1.25); }
+
+.dot-nav__item.is-active {
+  background: var(--metal-gradient);
+  border-color: transparent;
+  transform: scale(1.4);
+}
+
+.dot-nav__item::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 20px;
+  transform: translateY(-50%) translateX(6px);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-heading);
+  background: var(--bg-card);
+  border: 1px solid var(--border-line);
+  padding: 5px 12px;
+  border-radius: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dot-nav__item:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ============================================
    Theme toggle button
    ============================================ */
 .theme-toggle {
@@ -490,15 +565,91 @@ h1 {
    ============================================ */
 .reveal {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(22px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* Staggered children — timeline entries, education cards, skill tags */
+.reveal .timeline > li,
+.reveal .edu-list > .edu-item,
+.reveal .skill-group,
+.reveal .skill-tags > .skill-tag {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.reveal.is-visible .timeline > li,
+.reveal.is-visible .edu-list > .edu-item,
+.reveal.is-visible .skill-group,
+.reveal.is-visible .skill-tags > .skill-tag {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal .timeline > li:nth-child(1) { transition-delay: 0.05s; }
+.reveal .timeline > li:nth-child(2) { transition-delay: 0.18s; }
+.reveal .timeline > li:nth-child(3) { transition-delay: 0.31s; }
+
+.reveal .edu-list > .edu-item:nth-child(1) { transition-delay: 0.05s; }
+.reveal .edu-list > .edu-item:nth-child(2) { transition-delay: 0.16s; }
+
+.reveal .skill-group:nth-child(1) { transition-delay: 0.05s; }
+.reveal .skill-group:nth-child(2) { transition-delay: 0.14s; }
+.reveal .skill-group:nth-child(3) { transition-delay: 0.23s; }
+
+.reveal .skill-tags > .skill-tag:nth-child(1) { transition-delay: 0.05s; }
+.reveal .skill-tags > .skill-tag:nth-child(2) { transition-delay: 0.11s; }
+.reveal .skill-tags > .skill-tag:nth-child(3) { transition-delay: 0.17s; }
+.reveal .skill-tags > .skill-tag:nth-child(4) { transition-delay: 0.23s; }
+.reveal .skill-tags > .skill-tag:nth-child(5) { transition-delay: 0.29s; }
+
+/* Timeline dot fills in once its entry is revealed */
+.timeline li::before {
+  transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+}
+.reveal.is-visible .timeline > li:nth-child(1)::before { transition-delay: 0.25s; }
+.reveal.is-visible .timeline > li:nth-child(2)::before { transition-delay: 0.38s; }
+.reveal.is-visible .timeline > li:nth-child(3)::before { transition-delay: 0.51s; }
+.reveal.is-visible .timeline > li::before {
+  background: var(--metal-gradient);
+  border-color: transparent;
+  transform: scale(1.15);
+}
+
+/* Micro-interactions */
+.edu-item {
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.edu-item:hover {
+  border-color: var(--silver-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -12px rgba(0, 0, 0, 0.25);
+}
+
+.skill-tag { transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease; }
+.skill-tag:hover {
+  background: var(--metal-gradient);
+  color: var(--black);
+  border-color: transparent;
+  transform: translateY(-2px);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .card { animation: none !important; opacity: 1 !important; transform: none !important; }
   .btn:active, .btn:hover { transform: none; }
-  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .edu-item:hover, .skill-tag:hover { transform: none; }
+  .reveal,
+  .reveal .timeline > li,
+  .reveal .edu-list > .edu-item,
+  .reveal .skill-group,
+  .reveal .skill-tags > .skill-tag,
+  .timeline li::before {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 /* ============================================
