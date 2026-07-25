@@ -68,13 +68,6 @@
 
     <!-- ============ HERO ============ -->
     <section class="hero" id="hero">
-      <svg class="hero__map" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-        <path d="M20 150 Q 90 90, 140 120 T 260 100 T 380 60" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M40 170 Q 110 120, 160 140 T 300 130 T 390 90" fill="none" stroke="currentColor" stroke-width="1.5"/>
-        <circle cx="140" cy="120" r="2.5" fill="currentColor"/>
-        <circle cx="260" cy="100" r="2.5" fill="currentColor"/>
-      </svg>
-
       <div class="seal">
         <picture>
           <source srcset="avatar.webp" type="image/webp">
@@ -115,6 +108,24 @@
       </div>
     </section>
 
+    <!-- ============ SECTION NAV (tabs) ============ -->
+    <nav class="site-nav" aria-label="التنقل بين الأقسام">
+      <a class="site-nav__mark" href="#hero">
+        <span class="dot" aria-hidden="true"></span> علي كامل
+      </a>
+      <div class="site-nav__links" role="tablist">
+        <button class="site-nav__link" type="button" data-tab-target="experience" role="tab" aria-selected="false" aria-controls="experience">الخبرة</button>
+        <button class="site-nav__link" type="button" data-tab-target="education" role="tab" aria-selected="false" aria-controls="education">التعليم</button>
+        <button class="site-nav__link" type="button" data-tab-target="skills" role="tab" aria-selected="false" aria-controls="skills">المهارات</button>
+        <button class="site-nav__link" type="button" data-tab-target="projects" role="tab" aria-selected="false" aria-controls="projects">المشاريع</button>
+        <button class="site-nav__link" type="button" data-tab-target="contact" role="tab" aria-selected="false" aria-controls="contact">التواصل</button>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي والنهاري">
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      </button>
+    </nav>
+
     <!-- ============ STATS ============ -->
     <section class="stats" aria-label="لمحة سريعة">
       <div class="stats__inner">
@@ -133,30 +144,11 @@
       </div>
     </section>
 
-    <!-- ============ SECTION NAV (tabs) ============ -->
-    <nav class="site-nav" aria-label="التنقل بين الأقسام">
-      <a class="site-nav__mark" href="#hero">
-        <span class="dot" aria-hidden="true"></span> علي كامل
-      </a>
-      <div class="site-nav__links" role="tablist">
-        <button class="site-nav__link" type="button" data-tab-target="about" role="tab" aria-selected="false" aria-controls="about">نبذة</button>
-        <button class="site-nav__link" type="button" data-tab-target="experience" role="tab" aria-selected="false" aria-controls="experience">الخبرة</button>
-        <button class="site-nav__link" type="button" data-tab-target="education" role="tab" aria-selected="false" aria-controls="education">التعليم</button>
-        <button class="site-nav__link" type="button" data-tab-target="skills" role="tab" aria-selected="false" aria-controls="skills">المهارات</button>
-        <button class="site-nav__link" type="button" data-tab-target="projects" role="tab" aria-selected="false" aria-controls="projects">المشاريع</button>
-        <button class="site-nav__link" type="button" data-tab-target="contact" role="tab" aria-selected="false" aria-controls="contact">التواصل</button>
-      </div>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي والنهاري">
-        <i class="fa-solid fa-sun" aria-hidden="true"></i>
-        <i class="fa-solid fa-moon" aria-hidden="true"></i>
-      </button>
-    </nav>
-
     <!-- ============ TAB PANELS ============ -->
     <div class="tab-panels" id="tabPanels">
 
-    <!-- ============ ABOUT ============ -->
-    <section class="section about tab-panel" id="about" role="tabpanel" hidden>
+    <!-- ============ ABOUT (always visible, not a tab) ============ -->
+    <section class="section about is-static" id="about">
       <div class="section-label">نبذة عني</div>
       <p>
         متخصص في إدارة تقنيات المعلومات (ITM) يجمع بين خبرة ميدانية في صيانة شبكات
@@ -379,33 +371,7 @@
     <!-- ============ CONTACT ============ -->
     <section class="section contact tab-panel" id="contact" role="tabpanel" hidden>
       <div class="section-label">التواصل</div>
-      <p class="contact-lead">متاح للتواصل بخصوص فرص العمل أو المشاريع المشتركة. أسرع وسيلة هي البريد الإلكتروني أو الهاتف، أو عبر النموذج مباشرة.</p>
-
-      <!--
-        نموذج Formspree: استبدل YOUR_FORM_ID برقم النموذج من حسابك على
-        https://formspree.io بعد إنشاء نموذج جديد بالبريد Alikoko0770@gmail.com
-        قبل تعبئة المعرّف، النموذج لن يرسل شيئًا.
-      -->
-      <form class="contact-form" id="contactForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-        <div class="contact-form__row">
-          <label class="contact-form__field">
-            <span>الاسم</span>
-            <input type="text" name="name" required autocomplete="name">
-          </label>
-          <label class="contact-form__field">
-            <span>البريد الإلكتروني</span>
-            <input type="email" name="email" required autocomplete="email">
-          </label>
-        </div>
-        <label class="contact-form__field">
-          <span>الرسالة</span>
-          <textarea name="message" rows="4" required></textarea>
-        </label>
-        <button class="cta-btn cta-btn--primary contact-form__submit" type="submit">
-          <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> إرسال الرسالة
-        </button>
-        <p class="contact-form__status" id="contactFormStatus" role="status" aria-live="polite"></p>
-      </form>
+      <p class="contact-lead">متاح للتواصل بخصوص فرص العمل أو المشاريع المشتركة. أسرع وسيلة هي البريد الإلكتروني أو الهاتف.</p>
 
       <div class="link-grid">
         <a class="btn" href="mailto:Alikoko0770@gmail.com">

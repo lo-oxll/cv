@@ -142,44 +142,6 @@
     openTab(initialHash);
   }
 
-  // ---- Contact form (Formspree) ----
-  // Submits via fetch so the visitor stays on the page. Requires a real
-  // Formspree endpoint in the form's action="" attribute — with the
-  // placeholder left in place, submissions will fail with a clear error.
-  var contactForm = document.getElementById('contactForm');
-  var contactStatus = document.getElementById('contactFormStatus');
-  if (contactForm && contactStatus) {
-    contactForm.addEventListener('submit', function (event) {
-      event.preventDefault();
-      var submitBtn = contactForm.querySelector('.contact-form__submit');
-      submitBtn.disabled = true;
-      contactStatus.removeAttribute('data-state');
-      contactStatus.textContent = 'جارٍ الإرسال…';
-      fetch(contactForm.action, {
-        method: 'POST',
-        body: new FormData(contactForm),
-        headers: { Accept: 'application/json' }
-      })
-        .then(function (res) {
-          if (res.ok) {
-            contactStatus.textContent = 'تم إرسال رسالتك، شكرًا لتواصلك.';
-            contactStatus.setAttribute('data-state', 'ok');
-            contactForm.reset();
-          } else {
-            contactStatus.textContent = 'تعذّر إرسال الرسالة، جرّب البريد الإلكتروني مباشرة.';
-            contactStatus.setAttribute('data-state', 'err');
-          }
-        })
-        .catch(function () {
-          contactStatus.textContent = 'تعذّر الاتصال بالخادم، جرّب البريد الإلكتروني مباشرة.';
-          contactStatus.setAttribute('data-state', 'err');
-        })
-        .finally(function () {
-          submitBtn.disabled = false;
-        });
-    });
-  }
-
   // ---- Projects: load live from GitHub API, fall back to the static
   // list already in the HTML if the request fails or is rate-limited ----
   var projectGrid = document.querySelector('.project-grid');
