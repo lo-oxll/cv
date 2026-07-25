@@ -167,7 +167,7 @@ body::before {
 
 .site-nav__links {
   display: flex;
-  gap: 2px;
+  gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -178,22 +178,26 @@ body::before {
 
 .site-nav__link {
   flex-shrink: 0;
-  padding: 8px 14px;
+  padding: 9px 16px;
   border-radius: 30px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--fg-muted);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--fg-body);
   text-decoration: none;
   white-space: nowrap;
-  border: none;
+  border: 1.5px solid var(--border-line);
   background: none;
   cursor: pointer;
-  transition: color 0.25s ease, background-color 0.25s ease;
+  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.site-nav__link:hover { color: var(--fg-heading); }
-.site-nav__link.is-active { color: var(--fg-heading); background: var(--bg-btn); }
+.site-nav__link:hover { color: var(--fg-heading); border-color: var(--silver-dark); }
+.site-nav__link.is-active {
+  color: var(--icon-fg);
+  background: var(--icon-bg);
+  border-color: var(--icon-bg);
+}
 .site-nav__link:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
 
 .theme-toggle {
@@ -342,25 +346,28 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  align-items: center;
+  gap: 0;
   margin-bottom: var(--space-2);
 }
 
 .role-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px clamp(16px, 4vw, 22px);
-  border: 1px solid var(--border-strong);
+  gap: 7px;
+  padding: 0 10px;
+  border: none;
   color: var(--fg-heading);
   font-weight: 600;
   font-size: clamp(13px, 3vw, 14.5px);
-  border-radius: 30px;
-  background: linear-gradient(180deg, rgba(127, 127, 127, 0.08), transparent);
+  border-radius: 0;
+  background: none;
   white-space: nowrap;
 }
 
-.role-badge i { color: var(--fg-heading); font-size: 13px; }
+.role-badge:not(:last-child) { border-inline-end: 1px solid var(--border-line); }
+
+.role-badge i { color: var(--fg-muted); font-size: 12px; }
 
 .hero__location {
   display: flex;
@@ -729,6 +736,64 @@ h1 {
   margin-bottom: var(--space-3);
   max-width: 60ch;
 }
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: var(--space-3);
+  padding: 18px;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-card);
+  background: var(--bg-btn);
+}
+
+.contact-form__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 480px) {
+  .contact-form__row { grid-template-columns: 1fr 1fr; }
+}
+
+.contact-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.contact-form__field input,
+.contact-form__field textarea {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-line);
+  background: var(--bg-card);
+  color: var(--fg-heading);
+  resize: vertical;
+}
+
+.contact-form__field input:focus-visible,
+.contact-form__field textarea:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 1px;
+}
+
+.contact-form__submit { align-self: flex-start; }
+
+.contact-form__status {
+  font-size: 13px;
+  color: var(--fg-muted);
+  min-height: 1.2em;
+}
+.contact-form__status[data-state='ok'] { color: #2f9e44; }
+.contact-form__status[data-state='err'] { color: #e03131; }
 
 .link-grid {
   display: grid;

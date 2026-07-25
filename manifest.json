@@ -1,0 +1,40 @@
+{
+  "name": "علي كامل ياسين — سيرة ذاتية رقمية",
+  "short_name": "علي كامل",
+  "description": "محاسب ومراقب مخزني، فني شبكات FTTH، ومطور مواقع ويب — بغداد، العراق",
+  "start_url": "https://lo-oxll.github.io/ali/",
+  "scope": "https://lo-oxll.github.io/ali/",
+  "id": "https://lo-oxll.github.io/ali/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

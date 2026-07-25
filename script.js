@@ -141,4 +141,114 @@
   if (initialHash && initialHash !== 'hero') {
     openTab(initialHash);
   }
+
+  // ---- Contact form (Formspree) ----
+  // Submits via fetch so the visitor stays on the page. Requires a real
+  // Formspree endpoint in the form's action="" attribute — with the
+  // placeholder left in place, submissions will fail with a clear error.
+  var contactForm = document.getElementById('contactForm');
+  var contactStatus = document.getElementById('contactFormStatus');
+  if (contactForm && contactStatus) {
+    contactForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var submitBtn = contactForm.querySelector('.contact-form__submit');
+      submitBtn.disabled = true;
+      contactStatus.removeAttribute('data-state');
+      contactStatus.textContent = 'جارٍ الإرسال…';
+      fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { Accept: 'application/json' }
+      })
+        .then(function (res) {
+          if (res.ok) {
+            contactStatus.textContent = 'تم إرسال رسالتك، شكرًا لتواصلك.';
+            contactStatus.setAttribute('data-state', 'ok');
+            contactForm.reset();
+          } else {
+            contactStatus.textContent = 'تعذّر إرسال الرسالة، جرّب البريد الإلكتروني مباشرة.';
+            contactStatus.setAttribute('data-state', 'err');
+          }
+        })
+        .catch(function () {
+          contactStatus.textContent = 'تعذّر الاتصال بالخادم، جرّب البريد الإلكتروني مباشرة.';
+          contactStatus.setAttribute('data-state', 'err');
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+        });
+    });
+  }
+
+  // ---- Projects: load live from GitHub API, fall back to the static
+  // list already in the HTML if the request fails or is rate-limited ----
+  var projectGrid = document.querySelector('.project-grid');
+  if (projectGrid) {
+    var GITHUB_USER = 'lo-oxll';
+    var langColors = { JavaScript: 'lang-js', HTML: 'lang-html', CSS: 'lang-css' };
+
+    fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?sort=updated&per_page=12')
+      .then(function (res) {
+        if (!res.ok) throw new Error('github api error');
+        return res.json();
+      })
+      .then(function (repos) {
+        if (!Array.isArray(repos) || !repos.length) return;
+        var frag = document.createDocumentFragment();
+        repos
+          .filter(function (r) { return !r.fork; })
+          .forEach(function (repo) {
+            var a = document.createElement('a');
+            a.className = 'project-card';
+            // Prefer a real live demo: the repo's declared homepage, then
+            // its GitHub Pages site if one is published. Only fall back to
+            // the code repo itself when neither exists.
+            if (repo.homepage) {
+              a.href = repo.homepage;
+            } else if (repo.has_pages) {
+              a.href = 'https://' + GITHUB_USER + '.github.io/' + repo.name + '/';
+            } else {
+              a.href = repo.html_url;
+            }
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+
+            var top = document.createElement('div');
+            top.className = 'project-card__top';
+
+            var name = document.createElement('span');
+            name.className = 'project-card__name';
+            name.textContent = repo.name;
+
+            var lang = document.createElement('span');
+            lang.className = 'project-card__lang';
+            if (repo.language) {
+              var dot = document.createElement('span');
+              dot.className = 'lang-dot ' + (langColors[repo.language] || '');
+              lang.appendChild(dot);
+              lang.appendChild(document.createTextNode(' ' + repo.language));
+            }
+
+            top.appendChild(name);
+            top.appendChild(lang);
+
+            var desc = document.createElement('p');
+            desc.className = 'project-card__desc';
+            desc.textContent = repo.description || 'بدون وصف';
+
+            a.appendChild(top);
+            a.appendChild(desc);
+            frag.appendChild(a);
+          });
+        if (frag.childNodes.length) {
+          projectGrid.innerHTML = '';
+          projectGrid.appendChild(frag);
+        }
+      })
+      .catch(function () {
+        // Silently keep the static list already in the HTML — this is
+        // the expected path once GitHub's unauthenticated rate limit
+        // (60 requests/hour per IP) is hit.
+      });
+  }
 })();
