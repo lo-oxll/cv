@@ -4,6 +4,7 @@
  *  - light/dark theme toggle (persisted)
  *  - reveals the hero card once fonts/layout are ready
  *  - reveals sections on scroll
+ *  - horizontal tab switching (experience / education / skills / contact)
  *  - respects prefers-reduced-motion throughout
  */
 (function () {
@@ -63,80 +64,50 @@
     }
   }
 
-  // ---- Scroll progress bar ----
-  var progressBar = document.getElementById('scrollProgress');
-  var scrollHost = card || document.documentElement;
-
-  function updateProgress() {
-    if (!progressBar) return;
-    var scrollTop = scrollHost.scrollTop;
-    var scrollHeight = scrollHost.scrollHeight - scrollHost.clientHeight;
-    var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
-    progressBar.style.width = pct + '%';
-  }
-
-  if (progressBar && scrollHost) {
-    scrollHost.addEventListener('scroll', updateProgress, { passive: true });
-    updateProgress();
-  }
-
-  // ---- Dot navigation: smooth scroll + active state ----
-  var dotItems = document.querySelectorAll('.dot-nav__item');
-  var namedSections = document.querySelectorAll('[data-section]');
-
-  dotItems.forEach(function (dot) {
-    dot.addEventListener('click', function (e) {
-      var targetId = dot.getAttribute('href');
-      var targetEl = targetId && document.querySelector(targetId);
-      if (targetEl) {
-        e.preventDefault();
-        targetEl.scrollIntoView({
-          behavior: prefersReducedMotion ? 'auto' : 'smooth',
-          block: 'start'
-        });
-      }
-    });
-  });
-
-  function setActiveDot(name) {
-    dotItems.forEach(function (dot) {
-      dot.classList.toggle('is-active', dot.getAttribute('data-target') === name);
-    });
-  }
-
   // ---- Section scroll reveal ----
   var sections = document.querySelectorAll('.reveal');
 
   if (prefersReducedMotion || !('IntersectionObserver' in window)) {
     sections.forEach(function (el) { el.classList.add('is-visible'); });
-    return;
-  }
-
-  var revealObserver = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-  );
-
-  sections.forEach(function (el) { revealObserver.observe(el); });
-
-  if (namedSections.length && dotItems.length) {
-    var activeObserver = new IntersectionObserver(
+  } else {
+    var revealObserver = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            setActiveDot(entry.target.getAttribute('data-section'));
+            entry.target.classList.add('is-visible');
+            revealObserver.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
     );
-    namedSections.forEach(function (el) { activeObserver.observe(el); });
+    sections.forEach(function (el) { revealObserver.observe(el); });
   }
+
+  // ---- Tab switching ----
+  var tabButtons = document.querySelectorAll('.tab-btn');
+  var tabPanels = document.querySelectorAll('.tab-panel');
+
+  function activateTab(name) {
+    tabButtons.forEach(function (btn) {
+      var isMatch = btn.getAttribute('data-tab') === name;
+      btn.classList.toggle('is-active', isMatch);
+      btn.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+    });
+    tabPanels.forEach(function (panel) {
+      var isMatch = panel.getAttribute('data-panel') === name;
+      panel.classList.toggle('is-active', isMatch);
+      if (isMatch) {
+        panel.removeAttribute('hidden');
+      } else {
+        panel.setAttribute('hidden', '');
+      }
+    });
+  }
+
+  tabButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      activateTab(btn.getAttribute('data-tab'));
+    });
+  });
 })();

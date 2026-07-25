@@ -454,78 +454,57 @@ h1 {
 }
 
 /* ============================================
-   Scroll progress bar
+   Tabs
    ============================================ */
-.scroll-progress {
-  position: fixed;
-  top: 0;
-  inset-inline-start: 0;
-  height: 3px;
-  width: 0%;
-  background: var(--metal-gradient);
-  background-size: 200% 100%;
-  z-index: 30;
-  transition: width 0.1s linear;
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: var(--space-3);
 }
 
-/* ============================================
-   Dot navigation
-   ============================================ */
-.dot-nav {
-  position: fixed;
-  top: 50%;
-  inset-inline-end: 22px;
-  transform: translateY(-50%);
-  z-index: 15;
-  display: none;
-  flex-direction: column;
-  gap: 16px;
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--border-line);
+  border-radius: 30px;
+  background: var(--bg-btn);
+  color: var(--fg-body);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-@media (min-width: 900px) {
-  .dot-nav { display: flex; }
-}
+.tab-btn i { font-size: 12.5px; }
 
-.dot-nav__item {
-  position: relative;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  border: 1px solid var(--silver-dark);
-  background: transparent;
-  transition: background-color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
-}
+.tab-btn:hover { border-color: var(--silver-dark); }
+.tab-btn:active { transform: scale(0.97); }
 
-.dot-nav__item:hover { border-color: var(--fg-heading); transform: scale(1.25); }
-
-.dot-nav__item.is-active {
+.tab-btn.is-active {
   background: var(--metal-gradient);
   border-color: transparent;
-  transform: scale(1.4);
+  color: var(--black);
 }
 
-.dot-nav__item::after {
-  content: attr(data-label);
-  position: absolute;
-  top: 50%;
-  inset-inline-start: 20px;
-  transform: translateY(-50%) translateX(6px);
-  white-space: nowrap;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--fg-heading);
-  background: var(--bg-card);
-  border: 1px solid var(--border-line);
-  padding: 5px 12px;
-  border-radius: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+.tab-btn:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
+
+.tab-panel {
+  animation: tab-fade 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.dot-nav__item:hover::after {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
+@keyframes tab-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-panel { animation: none; }
 }
 
 /* ============================================
