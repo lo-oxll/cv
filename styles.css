@@ -978,3 +978,14 @@ h1 {
   :root { --border-line: #8a8c91; --fg-body: #000; }
   .btn { border-width: 2px; }
 }
+
+/* ============================================
+   Default compact scale on phones
+   Reproduces the look of Safari's 50% page-zoom
+   by default, so no manual zooming is needed.
+   (zoom is supported by Safari/Chrome/Edge; browsers
+   without support simply show the page at 100%.)
+   ============================================ */
+@media (max-width: 640px) {
+  html { zoom: 0.5; }
+}
