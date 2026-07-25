@@ -142,29 +142,6 @@
     openTab(initialHash);
   }
 
-  // ---- Copy-to-clipboard for email / phone links ----
-  document.querySelectorAll('[data-copy]').forEach(function (btn) {
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      var value = btn.getAttribute('data-copy');
-      var done = function () {
-        var icon = btn.querySelector('i');
-        var prevClass = icon ? icon.className : null;
-        btn.classList.add('is-copied');
-        if (icon) icon.className = 'fa-solid fa-check';
-        window.setTimeout(function () {
-          btn.classList.remove('is-copied');
-          if (icon && prevClass) icon.className = prevClass;
-        }, 1500);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(value).then(done).catch(done);
-      } else {
-        done();
-      }
-    });
-  });
-
   // ---- "Back to top" button: only after scrolling ----
   var skipTop = document.querySelector('.skip-top');
   if (skipTop) {
