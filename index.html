@@ -22,22 +22,47 @@
 </head>
 
 <body>
-  <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي والنهاري">
-    <i class="fa-solid fa-sun" aria-hidden="true"></i>
-    <i class="fa-solid fa-moon" aria-hidden="true"></i>
-  </button>
-
   <main class="card" id="card">
     <div class="card__band"></div>
 
-    <!-- ============ HERO ============ -->
-    <section class="hero">
-      <div class="seal">
-        <img class="seal__img" src="avatar.jpeg" alt="علي كامل ياسين" width="116" height="116" loading="eager">
+    <!-- ============ STICKY NAV ============ -->
+    <nav class="site-nav" aria-label="التنقل الرئيسي">
+      <a class="site-nav__mark" href="#hero">
+        <span class="dot" aria-hidden="true"></span> علي كامل
+      </a>
+      <div class="site-nav__links" role="list">
+        <a class="site-nav__link is-active" href="#about">نبذة</a>
+        <a class="site-nav__link" href="#experience">الخبرة</a>
+        <a class="site-nav__link" href="#education">التعليم</a>
+        <a class="site-nav__link" href="#skills">المهارات</a>
+        <a class="site-nav__link" href="#contact">التواصل</a>
       </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي والنهاري">
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      </button>
+    </nav>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <svg class="hero__map" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <path d="M20 150 Q 90 90, 140 120 T 260 100 T 380 60" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M40 170 Q 110 120, 160 140 T 300 130 T 390 90" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="140" cy="120" r="2.5" fill="currentColor"/>
+        <circle cx="260" cy="100" r="2.5" fill="currentColor"/>
+      </svg>
+
+      <div class="seal">
+        <img class="seal__img" src="avatar.jpeg" alt="علي كامل ياسين" width="128" height="128" loading="eager">
+      </div>
+
+      <div class="hero__eyebrow"><span class="ribbon" aria-hidden="true"></span> سيرة ذاتية رقمية</div>
 
       <h1>علي كامل ياسين</h1>
       <div class="name-en">Ali Kamil Yaseen</div>
+
+      <p class="tagline">أُحوّل بيانات المخازن والسجلات الورقية إلى أنظمة رقمية دقيقة ومنظمة</p>
+
       <div class="rule"></div>
 
       <div class="roles">
@@ -50,10 +75,37 @@
         <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
         بغداد، العراق
       </div>
+
+      <div class="hero__ctas">
+        <a class="cta-btn cta-btn--primary" href="mailto:Alikoko0770@gmail.com">
+          <i class="fa-solid fa-envelope" aria-hidden="true"></i> تواصل معي
+        </a>
+        <a class="cta-btn cta-btn--ghost" href="https://www.linkedin.com/in/alikamilyaseen?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank" rel="noopener noreferrer">
+          <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i> LinkedIn
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ STATS ============ -->
+    <section class="stats" aria-label="لمحة سريعة">
+      <div class="stats__inner">
+        <div class="stat">
+          <div class="stat__num">+5</div>
+          <div class="stat__label">سنوات خبرة عملية</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num">3</div>
+          <div class="stat__label">مجالات تخصص</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num">2</div>
+          <div class="stat__label">مؤهلات دراسية</div>
+        </div>
+      </div>
     </section>
 
     <!-- ============ ABOUT ============ -->
-    <section class="section about reveal">
+    <section class="section about reveal" id="about">
       <div class="section-label">نبذة عني</div>
       <p>
         متخصص في إدارة تقنيات المعلومات (ITM) يجمع بين خبرة ميدانية في صيانة شبكات
@@ -64,148 +116,138 @@
       </p>
     </section>
 
-    <!-- ============ TABS ============ -->
-    <section class="section tabs-section reveal">
-      <div class="tabs" role="tablist" aria-label="أقسام السيرة الذاتية">
-        <button class="tab-btn is-active" type="button" role="tab" aria-selected="true" aria-controls="panel-experience" data-tab="experience">
-          <i class="fa-solid fa-briefcase" aria-hidden="true"></i> الخبرة المهنية
-        </button>
-        <button class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-education" data-tab="education">
-          <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> التعليم
-        </button>
-        <button class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-skills" data-tab="skills">
-          <i class="fa-solid fa-layer-group" aria-hidden="true"></i> المهارات
-        </button>
-        <button class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-contact" data-tab="contact">
-          <i class="fa-solid fa-address-card" aria-hidden="true"></i> التواصل
-        </button>
-      </div>
-
-      <div class="tab-panels">
-
-        <!-- ---- Experience panel ---- -->
-        <div class="tab-panel is-active" id="panel-experience" data-panel="experience" role="tabpanel">
-          <ul class="timeline">
-            <li>
-              <div class="timeline__date">يناير 2026 – الآن</div>
-              <div class="timeline__role">محاسب ومراقب مخزني وحسابات</div>
-              <div class="timeline__org">مطبعة شهداء الشرطة — وزارة الداخلية، بغداد</div>
-              <ul class="timeline__list">
-                <li>إدارة وتنظيم حركة المخزون والسيطرة على الصادرات والواردات</li>
-                <li>إجراء الجرد الدوري ومطابقة البيانات الحسابية والمخزنية</li>
-                <li>أتمتة السجلات الورقية وتحويلها إلى تقارير رقمية دقيقة</li>
-              </ul>
-            </li>
-            <li>
-              <div class="timeline__date">حزيران 2021 – أكتوبر 2025</div>
-              <div class="timeline__role">فني شبكات ضوئية (FTTH)</div>
-              <div class="timeline__org">شركات اتصالات — مواقع متعددة، بغداد</div>
-              <ul class="timeline__list">
-                <li>تنفيذ وصيانة تمديدات الكابل الضوئي لضمان استقرار الخدمة</li>
-                <li>تشخيص الأعطال الفنية الميدانية وإجراء عمليات اللحام والفحص التقني</li>
-                <li>العمل ضمن فرق الدعم الفني للبنى التحتية لشبكات الاتصالات</li>
-              </ul>
-            </li>
-            <li>
-              <div class="timeline__date">تموز 2020 – مايو 2021</div>
-              <div class="timeline__role">موظف مبيعات</div>
-              <div class="timeline__org">محل ذهب برازيلي (مجوهرات)، بغداد</div>
-              <ul class="timeline__list">
-                <li>إدارة عمليات البيع المباشر وضمان دقة الحسابات المالية اليومية</li>
-                <li>تطوير مهارات التواصل مع الزبائن وتقديم استشارات حول المنتجات</li>
-                <li>تنظيم المعروضات وإدارة العهود والموجودات بدقة عالية</li>
-              </ul>
-            </li>
+    <!-- ============ EXPERIENCE ============ -->
+    <section class="section experience reveal" id="experience">
+      <div class="section-label">الخبرة المهنية</div>
+      <ul class="timeline">
+        <li>
+          <div class="timeline__date">يناير 2026 – الآن</div>
+          <div class="timeline__role">محاسب ومراقب مخزني وحسابات</div>
+          <div class="timeline__org">مطبعة شهداء الشرطة — وزارة الداخلية، بغداد</div>
+          <ul class="timeline__list">
+            <li>إدارة وتنظيم حركة المخزون والسيطرة على الصادرات والواردات</li>
+            <li>إجراء الجرد الدوري ومطابقة البيانات الحسابية والمخزنية</li>
+            <li>أتمتة السجلات الورقية وتحويلها إلى تقارير رقمية دقيقة</li>
           </ul>
-        </div>
+        </li>
+        <li>
+          <div class="timeline__date">حزيران 2021 – أكتوبر 2025</div>
+          <div class="timeline__role">فني شبكات ضوئية (FTTH)</div>
+          <div class="timeline__org">شركات اتصالات — مواقع متعددة، بغداد</div>
+          <ul class="timeline__list">
+            <li>تنفيذ وصيانة تمديدات الكابل الضوئي لضمان استقرار الخدمة</li>
+            <li>تشخيص الأعطال الفنية الميدانية وإجراء عمليات اللحام والفحص التقني</li>
+            <li>العمل ضمن فرق الدعم الفني للبنى التحتية لشبكات الاتصالات</li>
+          </ul>
+        </li>
+        <li>
+          <div class="timeline__date">تموز 2020 – مايو 2021</div>
+          <div class="timeline__role">موظف مبيعات</div>
+          <div class="timeline__org">محل ذهب برازيلي (مجوهرات)، بغداد</div>
+          <ul class="timeline__list">
+            <li>إدارة عمليات البيع المباشر وضمان دقة الحسابات المالية اليومية</li>
+            <li>تطوير مهارات التواصل مع الزبائن وتقديم استشارات حول المنتجات</li>
+            <li>تنظيم المعروضات وإدارة العهود والموجودات بدقة عالية</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
 
-        <!-- ---- Education panel ---- -->
-        <div class="tab-panel" id="panel-education" data-panel="education" role="tabpanel" hidden>
-          <div class="edu-list">
-            <div class="edu-item">
-              <div class="edu-item__degree">بكالوريوس إدارة تقنيات المعلومات (IT Management)</div>
-              <div class="edu-item__place">الكلية التقنية الإدارية — الجامعة التقنية الوسطى، بغداد</div>
-              <div class="edu-item__date">2023 – 2026</div>
-            </div>
-            <div class="edu-item">
-              <div class="edu-item__degree">دبلوم تقنيات الإحصاء — فرع المعلوماتية</div>
-              <div class="edu-item__place">معهد الإدارة، الرصافة — الجامعة التقنية الوسطى، بغداد</div>
-              <div class="edu-item__date">2021 – 2023</div>
-            </div>
+    <!-- ============ EDUCATION ============ -->
+    <section class="section education reveal" id="education">
+      <div class="section-label">التعليم</div>
+      <div class="edu-list">
+        <div class="edu-item">
+          <div class="edu-item__icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></div>
+          <div>
+            <div class="edu-item__degree">بكالوريوس إدارة تقنيات المعلومات (IT Management)</div>
+            <div class="edu-item__place">الكلية التقنية الإدارية — الجامعة التقنية الوسطى، بغداد</div>
+            <div class="edu-item__date">2023 – 2026</div>
           </div>
         </div>
-
-        <!-- ---- Skills panel ---- -->
-        <div class="tab-panel" id="panel-skills" data-panel="skills" role="tabpanel" hidden>
-          <div class="skill-group">
-            <div class="skill-group__title">تقنية</div>
-            <div class="skill-tags">
-              <span class="skill-tag">إدارة قواعد البيانات</span>
-              <span class="skill-tag">تحليل البيانات (SPSS)</span>
-              <span class="skill-tag">الأرشفة الرقمية</span>
-              <span class="skill-tag">Microsoft Office</span>
-              <span class="skill-tag">أدوات الذكاء الاصطناعي</span>
-            </div>
-          </div>
-
-          <div class="skill-group">
-            <div class="skill-group__title">إدارية</div>
-            <div class="skill-tags">
-              <span class="skill-tag">الرقابة والسيطرة المخزنية</span>
-              <span class="skill-tag">أتمتة العمليات</span>
-              <span class="skill-tag">إعداد الموازنات التقديرية</span>
-            </div>
-          </div>
-
-          <div class="skill-group">
-            <div class="skill-group__title">ميدانية</div>
-            <div class="skill-tags">
-              <span class="skill-tag">تمديد وصيانة شبكات FTTH</span>
-              <span class="skill-tag">صيانة كاميرات المراقبة (CCTV)</span>
-            </div>
+        <div class="edu-item">
+          <div class="edu-item__icon"><i class="fa-solid fa-award" aria-hidden="true"></i></div>
+          <div>
+            <div class="edu-item__degree">دبلوم تقنيات الإحصاء — فرع المعلوماتية</div>
+            <div class="edu-item__place">معهد الإدارة، الرصافة — الجامعة التقنية الوسطى، بغداد</div>
+            <div class="edu-item__date">2021 – 2023</div>
           </div>
         </div>
-
-        <!-- ---- Contact panel ---- -->
-        <div class="tab-panel" id="panel-contact" data-panel="contact" role="tabpanel" hidden>
-          <nav class="links" aria-label="معلومات التواصل" style="margin-bottom: var(--space-2);">
-            <a class="btn" href="mailto:Alikoko0770@gmail.com">
-              <span class="icon"><i class="fa-solid fa-envelope" aria-hidden="true"></i></span> E-mail
-            </a>
-            <a class="btn" href="tel:+9647733456798">
-              <span class="icon"><i class="fa-solid fa-phone" aria-hidden="true"></i></span> Phone
-            </a>
-          </nav>
-
-          <nav class="links" aria-label="روابط منصات التواصل الاجتماعي">
-            <a class="btn instagram" href="https://www.instagram.com/lo_oxll?igsh=MWx0dmxpbTU3bXlyNQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer">
-              <span class="icon"><i class="fa-brands fa-instagram" aria-hidden="true"></i></span> Instagram
-            </a>
-            <a class="btn github" href="https://github.com/lo-oxll" target="_blank" rel="noopener noreferrer">
-              <span class="icon"><i class="fa-brands fa-github" aria-hidden="true"></i></span> GitHub
-            </a>
-            <a class="btn facebook" href="https://www.facebook.com/profile.php?id=100010347520733" target="_blank" rel="noopener noreferrer">
-              <span class="icon"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></span> Facebook
-            </a>
-            <a class="btn linkedin" href="https://www.linkedin.com/in/alikamilyaseen?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank" rel="noopener noreferrer">
-              <span class="icon"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></span> LinkedIn
-            </a>
-            <a class="btn telegram" href="https://t.me/lo_oxll" target="_blank" rel="noopener noreferrer">
-              <span class="icon"><i class="fa-brands fa-telegram" aria-hidden="true"></i></span> Telegram
-            </a>
-            <a class="btn discord" href="https://discord.com/users/994903778153201676" target="_blank" rel="noopener noreferrer">
-              <span class="icon"><i class="fa-brands fa-discord" aria-hidden="true"></i></span> Discord
-            </a>
-            <a class="btn twitch" href="https://twitch.tv/lo_oxll" target="_blank" rel="noopener noreferrer">
-              <span class="icon"><i class="fa-brands fa-twitch" aria-hidden="true"></i></span> Twitch
-            </a>
-          </nav>
-        </div>
-
       </div>
     </section>
 
-    <div class="card__footer">© 2026 Ali Kamil Yaseen. All rights reserved.</div>
+    <!-- ============ SKILLS ============ -->
+    <section class="section skills reveal" id="skills">
+      <div class="section-label">المهارات</div>
+
+      <div class="skill-group">
+        <div class="skill-group__title">تقنية</div>
+        <div class="skill-tags">
+          <span class="skill-tag">إدارة قواعد البيانات</span>
+          <span class="skill-tag">تحليل البيانات (SPSS)</span>
+          <span class="skill-tag">الأرشفة الرقمية</span>
+          <span class="skill-tag">Microsoft Office</span>
+          <span class="skill-tag">أدوات الذكاء الاصطناعي</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group__title">إدارية</div>
+        <div class="skill-tags">
+          <span class="skill-tag">الرقابة والسيطرة المخزنية</span>
+          <span class="skill-tag">أتمتة العمليات</span>
+          <span class="skill-tag">إعداد الموازنات التقديرية</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group__title">ميدانية</div>
+        <div class="skill-tags">
+          <span class="skill-tag">تمديد وصيانة شبكات FTTH</span>
+          <span class="skill-tag">صيانة كاميرات المراقبة (CCTV)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="section contact reveal" id="contact">
+      <div class="section-label">التواصل</div>
+      <p class="contact-lead">متاح للتواصل بخصوص فرص العمل أو المشاريع المشتركة. أسرع وسيلة هي البريد الإلكتروني أو الهاتف.</p>
+
+      <div class="link-grid">
+        <a class="btn" href="mailto:Alikoko0770@gmail.com">
+          <span class="icon"><i class="fa-solid fa-envelope" aria-hidden="true"></i></span> E-mail
+        </a>
+        <a class="btn" href="tel:+9647733456798">
+          <span class="icon"><i class="fa-solid fa-phone" aria-hidden="true"></i></span> Phone
+        </a>
+        <a class="btn" href="https://www.linkedin.com/in/alikamilyaseen?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank" rel="noopener noreferrer">
+          <span class="icon"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></span> LinkedIn
+        </a>
+        <a class="btn" href="https://github.com/lo-oxll" target="_blank" rel="noopener noreferrer">
+          <span class="icon"><i class="fa-brands fa-github" aria-hidden="true"></i></span> GitHub
+        </a>
+        <a class="btn" href="https://www.instagram.com/lo_oxll?igsh=MWx0dmxpbTU3bXlyNQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer">
+          <span class="icon"><i class="fa-brands fa-instagram" aria-hidden="true"></i></span> Instagram
+        </a>
+        <a class="btn" href="https://www.facebook.com/profile.php?id=100010347520733" target="_blank" rel="noopener noreferrer">
+          <span class="icon"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></span> Facebook
+        </a>
+        <a class="btn" href="https://t.me/lo_oxll" target="_blank" rel="noopener noreferrer">
+          <span class="icon"><i class="fa-brands fa-telegram" aria-hidden="true"></i></span> Telegram
+        </a>
+        <a class="btn" href="https://discord.com/users/994903778153201676" target="_blank" rel="noopener noreferrer">
+          <span class="icon"><i class="fa-brands fa-discord" aria-hidden="true"></i></span> Discord
+        </a>
+        <a class="btn" href="https://twitch.tv/lo_oxll" target="_blank" rel="noopener noreferrer">
+          <span class="icon"><i class="fa-brands fa-twitch" aria-hidden="true"></i></span> Twitch
+        </a>
+      </div>
+    </section>
+
+    <div class="card__footer">
+      <span>© 2026 Ali Kamil Yaseen. All rights reserved.</span>
+    </div>
   </main>
 
   <script src="script.js"></script>
