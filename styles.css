@@ -647,6 +647,76 @@ h1 {
 }
 
 /* ============================================
+   Projects — GitHub repo grid
+   ============================================ */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: var(--space-3);
+}
+
+.project-card {
+  display: block;
+  padding: 16px 18px;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-card);
+  background: var(--bg-btn);
+  text-decoration: none;
+  color: var(--fg-heading);
+  transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.project-card:hover {
+  border-color: var(--silver-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -12px rgba(0, 0, 0, 0.25);
+  background: var(--bg-btn-hover);
+}
+.project-card:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
+
+.project-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.project-card__name {
+  font-weight: 700;
+  font-size: 13.5px;
+  direction: ltr;
+  unicode-bidi: embed;
+  overflow-wrap: anywhere;
+}
+
+.project-card__lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lang-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.lang-js { background: #f0db4f; }
+.lang-html { background: #e34c26; }
+.lang-css { background: #563d7c; }
+
+.project-card__desc {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+  line-height: 1.6;
+}
+
+.project-grid__more {
+  display: inline-flex;
+}
+
+/* ============================================
    Contact — link grid
    ============================================ */
 .contact-lead {
@@ -737,7 +807,8 @@ h1 {
 .reveal .edu-list > .edu-item,
 .reveal .skill-group,
 .reveal .skill-tags > .skill-tag,
-.reveal .link-grid > .btn {
+.reveal .link-grid > .btn,
+.reveal .project-grid > .project-card {
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -747,7 +818,8 @@ h1 {
 .reveal.is-visible .edu-list > .edu-item,
 .reveal.is-visible .skill-group,
 .reveal.is-visible .skill-tags > .skill-tag,
-.reveal.is-visible .link-grid > .btn {
+.reveal.is-visible .link-grid > .btn,
+.reveal.is-visible .project-grid > .project-card {
   opacity: 1;
   transform: translateY(0);
 }
@@ -799,12 +871,40 @@ h1 {
   .reveal .skill-group,
   .reveal .skill-tags > .skill-tag,
   .reveal .link-grid > .btn,
+  .reveal .project-grid > .project-card,
   .timeline li::before {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
   }
 }
+
+/* ============================================
+   Back-to-top
+   ============================================ */
+.skip-top {
+  position: fixed;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  inset-inline-end: max(18px, env(safe-area-inset-right));
+  z-index: 20;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--border-line);
+  background: var(--bg-btn);
+  color: var(--fg-heading);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.skip-top:hover { border-color: var(--silver-dark); transform: translateY(-2px); }
+.skip-top:active { transform: translateY(0) scale(0.94); }
+.skip-top:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
 
 /* ============================================
    Breakpoints
