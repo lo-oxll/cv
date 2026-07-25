@@ -70,6 +70,7 @@
   var panels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
   var navBar = document.querySelector('.site-nav__links');
   var homeMark = document.querySelector('.site-nav__mark');
+  var aboutSection = document.getElementById('about');
 
   function closeAllTabs() {
     panels.forEach(function (panel) {
@@ -80,6 +81,8 @@
       link.classList.remove('is-active');
       link.setAttribute('aria-selected', 'false');
     });
+    // Back to the home view: bring "About" back.
+    if (aboutSection) aboutSection.hidden = false;
   }
 
   function openTab(name) {
@@ -104,6 +107,8 @@
       }
     });
     if (!found) return false;
+    // A tab is now open: hide "About" so only the chosen section shows.
+    if (aboutSection) aboutSection.hidden = true;
     navLinks.forEach(function (link) {
       var isMatch = link.getAttribute('data-tab-target') === name;
       link.classList.toggle('is-active', isMatch);
