@@ -199,12 +199,13 @@
           top.appendChild(name);
           top.appendChild(lang);
 
-          var desc = document.createElement('p');
-          desc.className = 'project-card__desc';
-          desc.textContent = repo.description || 'بدون وصف';
-
           a.appendChild(top);
-          a.appendChild(desc);
+          if (repo.description) {
+            var desc = document.createElement('p');
+            desc.className = 'project-card__desc';
+            desc.textContent = repo.description;
+            a.appendChild(desc);
+          }
           frag.appendChild(a);
         });
       if (!frag.childNodes.length) return false;

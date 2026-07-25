@@ -9,8 +9,12 @@ const CORE_ASSETS = [
   './manifest.json',
   './favicon.jpeg',
   './apple-touch-icon.png',
-  './avatar.webp',
-  './avatar.jpeg',
+  './avatar-96.webp',
+  './avatar-128.webp',
+  './avatar-256.webp',
+  './avatar-96.jpeg',
+  './avatar-128.jpeg',
+  './avatar-256.jpeg',
   './icon-192.png',
   './icon-512.png'
 ];

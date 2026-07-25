@@ -21,11 +21,11 @@
   --radius-btn: 10px;
   --max-width: 860px;
 
-  --space-1: clamp(0.5rem, 0.45rem + 0.2vw, 0.625rem);
-  --space-2: clamp(0.875rem, 0.8rem + 0.3vw, 1.125rem);
-  --space-3: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
-  --space-4: clamp(2rem, 1.7rem + 1.2vw, 2.875rem);
-  --space-5: clamp(3rem, 2.4rem + 2.5vw, 5rem);
+  --space-1: 0.5rem;
+  --space-2: 0.875rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
 
   --bg-page: var(--black);
   --bg-card: var(--white);
@@ -133,7 +133,7 @@ body::before {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px clamp(16px, 5vw, 32px);
+  padding: 10px 16px;
   background: var(--nav-bg);
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
@@ -237,7 +237,7 @@ body::before {
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-2) clamp(20px, 6vw, 40px) var(--space-3);
+  padding: var(--space-2) 20px var(--space-3);
   text-align: center;
   overflow: hidden;
 }
@@ -245,8 +245,8 @@ body::before {
 .hero > * { position: relative; z-index: 1; }
 
 .seal {
-  width: clamp(96px, 24vw, 128px);
-  height: clamp(96px, 24vw, 128px);
+  width: 96px;
+  height: 96px;
   margin: 0 auto var(--space-2);
   position: relative;
   display: flex;
@@ -297,7 +297,7 @@ body::before {
 h1 {
   font-family: 'Amiri', serif;
   font-weight: 700;
-  font-size: clamp(28px, 6vw, 40px);
+  font-size: 28px;
   color: var(--fg-heading);
   letter-spacing: 0.3px;
   margin-bottom: 6px;
@@ -317,7 +317,7 @@ h1 {
 .tagline {
   font-family: 'Amiri', serif;
   font-style: italic;
-  font-size: clamp(14.5px, 3vw, 16.5px);
+  font-size: 14.5px;
   color: var(--fg-body);
   max-width: 46ch;
   line-height: 1.8;
@@ -354,7 +354,7 @@ h1 {
   border: none;
   color: var(--fg-heading);
   font-weight: 600;
-  font-size: clamp(11px, 2.6vw, 14.5px);
+  font-size: 11px;
   border-radius: 0;
   background: none;
   white-space: nowrap;
@@ -391,10 +391,10 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px clamp(14px, 4vw, 24px);
+  padding: 12px 14px;
   border-radius: var(--radius-btn);
   font-weight: 700;
-  font-size: clamp(12px, 3vw, 14px);
+  font-size: 12px;
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
@@ -434,7 +434,7 @@ h1 {
 .stats__inner {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-3) clamp(20px, 6vw, 40px);
+  padding: var(--space-3) 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-2);
@@ -444,7 +444,7 @@ h1 {
 .stat__num {
   font-family: 'Amiri', serif;
   font-weight: 700;
-  font-size: clamp(24px, 5vw, 32px);
+  font-size: 24px;
   color: var(--fg-heading);
   line-height: 1;
   margin-bottom: 6px;
@@ -464,7 +464,7 @@ h1 {
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-4) clamp(20px, 6vw, 40px);
+  padding: var(--space-4) 20px;
   scroll-margin-top: 64px;
 }
 
@@ -793,7 +793,7 @@ h1 {
    ============================================ */
 .card__footer {
   margin-top: auto;
-  padding: 18px clamp(20px, 6vw, 40px) max(18px, env(safe-area-inset-bottom));
+  padding: 18px 20px max(18px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--border-line);
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -966,7 +966,7 @@ h1 {
 }
 
 @media (min-width: 640px) {
-  .hero, .section { padding-left: clamp(20px, 6vw, 48px); padding-right: clamp(20px, 6vw, 48px); }
+  .hero, .section { padding-left: 20px; padding-right: 20px; }
   .link-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
