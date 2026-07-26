@@ -202,26 +202,26 @@ body::before {
 
 .theme-toggle {
   position: fixed;
-  top: max(14px, env(safe-area-inset-top));
-  right: max(14px, env(safe-area-inset-right));
+  top: max(26px, env(safe-area-inset-top));
+  right: max(26px, env(safe-area-inset-right));
   z-index: 40;
-  width: 38px;
-  height: 38px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border: 1px solid var(--border-line);
+  border: 1.5px solid var(--border-strong);
   background: var(--bg-btn);
   color: var(--fg-heading);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 19px;
   cursor: pointer;
-  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.3);
-  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+  box-shadow: 0 10px 26px -8px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.theme-toggle:hover { border-color: var(--silver-dark); }
+.theme-toggle:hover { border-color: var(--silver-dark); box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.45); transform: scale(1.05); }
 .theme-toggle:active { transform: scale(0.92); }
 .theme-toggle:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
 
@@ -967,6 +967,13 @@ h1 {
   .btn .icon { width: 28px; height: 28px; font-size: 12px; }
   .name-en { letter-spacing: 2px; }
   .stats__inner { grid-template-columns: 1fr; gap: var(--space-1); }
+  .theme-toggle {
+    top: max(18px, env(safe-area-inset-top));
+    right: max(18px, env(safe-area-inset-right));
+    width: 44px;
+    height: 44px;
+    font-size: 17px;
+  }
 }
 
 @media (min-width: 640px) {

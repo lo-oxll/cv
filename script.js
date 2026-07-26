@@ -157,21 +157,24 @@
     window.addEventListener('scroll', toggleSkipTop, { passive: true });
   }
 
-  // ---- Projects: load live from GitHub API, cache in localStorage for
-  // 6 hours to avoid hitting the unauthenticated rate limit on every visit,
-  // fall back to the static list already in the HTML if all else fails ----
+  // ---- Projects: load live from GitHub API every visit, using ETag
+  // conditional requests so the grid always reflects the current state
+  // of the GitHub account (added / edited / deleted repos) without
+  // burning through the unauthenticated rate limit — a 304 "not
+  // modified" response does not count against the 60 req/hour limit.
+  // Falls back to the static list already in the HTML if the network
+  // request fails or the visitor is offline. ----
   var projectGrid = document.querySelector('.project-grid');
   if (projectGrid) {
     var GITHUB_USER = 'lo-oxll';
-    var CACHE_KEY = 'gh-repos-cache';
-    var CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+    var CACHE_KEY = 'gh-repos-cache-v2';
     var langColors = { JavaScript: 'lang-js', HTML: 'lang-html', CSS: 'lang-css' };
 
     function renderRepos(repos) {
       if (!Array.isArray(repos) || !repos.length) return false;
       var frag = document.createDocumentFragment();
       repos
-        .filter(function (r) { return !r.fork; })
+        .filter(function (r) { return !r.fork && !r.archived; })
         .forEach(function (repo) {
           var a = document.createElement('a');
           a.className = 'project-card';
@@ -190,6 +193,8 @@
 
           var name = document.createElement('span');
           name.className = 'project-card__name';
+          name.setAttribute('lang', 'en');
+          name.setAttribute('dir', 'ltr');
           name.textContent = repo.name;
 
           var lang = document.createElement('span');
@@ -238,40 +243,62 @@
         var raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
         var parsed = JSON.parse(raw);
-        if (!parsed || !parsed.timestamp || !parsed.repos) return null;
-        if (Date.now() - parsed.timestamp > CACHE_TTL_MS) return null;
-        return parsed.repos;
+        if (!parsed || !parsed.repos) return null;
+        return parsed;
       } catch (e) {
         return null;
       }
     }
 
-    function writeCache(repos) {
+    function writeCache(etag, repos) {
       try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), repos: repos }));
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ etag: etag || null, repos: repos }));
       } catch (e) {}
     }
 
-    var cached = readCache();
-    if (cached) {
-      renderRepos(cached);
+    var cache = readCache();
+    // Show whatever we already have (cached repos, or the static
+    // fallback baked into the HTML) instantly, then reconcile with
+    // GitHub in the background so the grid never sits on a skeleton.
+    if (cache && renderRepos(cache.repos)) {
+      // already rendered from cache
     } else {
       showSkeleton();
-      fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?sort=updated&per_page=12')
-        .then(function (res) {
-          if (!res.ok) throw new Error('github api error');
-          return res.json();
-        })
-        .then(function (repos) {
-          if (renderRepos(repos)) writeCache(repos);
-        })
-        .catch(function () {
-          // Restore the static list already in the HTML — this is the
-          // expected path once GitHub's unauthenticated rate limit
-          // (60 requests/hour per IP) is hit, or the request otherwise fails.
-          projectGrid.innerHTML = staticMarkup;
-        });
     }
+
+    var fetchHeaders = {};
+    if (cache && cache.etag) fetchHeaders['If-None-Match'] = cache.etag;
+
+    fetch(
+      'https://api.github.com/users/' + GITHUB_USER + '/repos?sort=updated&per_page=100',
+      { headers: fetchHeaders }
+    )
+      .then(function (res) {
+        if (res.status === 304) {
+          // Nothing changed on GitHub since last check — what's
+          // already on screen (from cache) is up to date.
+          return null;
+        }
+        if (!res.ok) throw new Error('github api error');
+        var etag = res.headers.get('ETag');
+        return res.json().then(function (repos) {
+          return { etag: etag, repos: repos };
+        });
+      })
+      .then(function (result) {
+        if (!result) return; // 304, nothing to update
+        if (renderRepos(result.repos)) {
+          writeCache(result.etag, result.repos);
+        }
+      })
+      .catch(function () {
+        // Network failed and we had nothing cached to fall back to
+        // from the skeleton state — restore the static list baked
+        // into the HTML as the last resort.
+        if (!cache) {
+          projectGrid.innerHTML = staticMarkup;
+        }
+      });
   }
 
   // ---- Register service worker for offline support ----
