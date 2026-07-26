@@ -147,19 +147,17 @@ body::before {
 .site-nav__mark {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: 'Amiri', serif;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--fg-heading);
-  white-space: nowrap;
+  justify-content: center;
+  padding: 8px;
+  margin: -8px;
   flex-shrink: 0;
   text-decoration: none;
+  border-radius: 50%;
 }
 
 .site-nav__mark .dot {
-  width: 7px;
-  height: 7px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--metal-gradient);
   flex-shrink: 0;
@@ -203,10 +201,10 @@ body::before {
 .theme-toggle {
   position: fixed;
   top: max(26px, env(safe-area-inset-top));
-  right: max(26px, env(safe-area-inset-right));
+  right: max(52px, calc(env(safe-area-inset-right) + 40px));
   z-index: 40;
-  width: 50px;
-  height: 50px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   border: 1.5px solid var(--border-strong);
   background: var(--bg-btn);
@@ -214,7 +212,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 19px;
+  font-size: 22px;
   cursor: pointer;
   box-shadow: 0 10px 26px -8px rgba(0, 0, 0, 0.4);
   transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
@@ -969,10 +967,10 @@ h1 {
   .stats__inner { grid-template-columns: 1fr; gap: var(--space-1); }
   .theme-toggle {
     top: max(18px, env(safe-area-inset-top));
-    right: max(18px, env(safe-area-inset-right));
-    width: 44px;
-    height: 44px;
-    font-size: 17px;
+    right: max(40px, calc(env(safe-area-inset-right) + 30px));
+    width: 48px;
+    height: 48px;
+    font-size: 19px;
   }
 }
 
