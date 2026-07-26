@@ -201,7 +201,10 @@ body::before {
 .site-nav__link:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
 
 .theme-toggle {
-  flex-shrink: 0;
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 40;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -213,6 +216,7 @@ body::before {
   justify-content: center;
   font-size: 15px;
   cursor: pointer;
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.3);
   transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
@@ -980,12 +984,13 @@ h1 {
 }
 
 /* ============================================
-   Default compact scale on phones
-   Reproduces the look of Safari's 50% page-zoom
-   by default, so no manual zooming is needed.
+   Default compact scale, everywhere
+   Reproduces the look of the browser's 50%
+   page-zoom by default, so no manual zooming
+   is needed — at 100% browser zoom the page now
+   renders at the same visual size it used to at
+   a manual 50% zoom.
    (zoom is supported by Safari/Chrome/Edge; browsers
    without support simply show the page at 100%.)
    ============================================ */
-@media (max-width: 640px) {
-  html { zoom: 0.5; }
-}
+html { zoom: 0.5; }
