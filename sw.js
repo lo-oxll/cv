@@ -1,6 +1,6 @@
 // Minimal offline-first service worker for the static profile site.
 // Bump CACHE_NAME whenever the cached file list changes to force a refresh.
-const CACHE_NAME = 'ali-site-v2';
+const CACHE_NAME = 'ali-site-v3';
 const CORE_ASSETS = [
   './',
   './index.html',

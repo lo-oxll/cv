@@ -171,7 +171,14 @@
   if (projectGrid) {
     var GITHUB_USER = 'lo-oxll';
     var langColors = { JavaScript: 'lang-js', HTML: 'lang-html', CSS: 'lang-css' };
-    var staticMarkup = projectGrid.innerHTML;
+
+    function showEmptyState() {
+      var p = document.createElement('p');
+      p.className = 'project-card__desc';
+      p.textContent = 'تعذر تحميل المشاريع حالياً. يمكنك تصفحها مباشرة على GitHub من الزر أدناه.';
+      projectGrid.innerHTML = '';
+      projectGrid.appendChild(p);
+    }
 
     function renderRepos(repos) {
       if (!Array.isArray(repos) || !repos.length) return false;
@@ -231,11 +238,12 @@
         return res.json();
       })
       .then(function (repos) {
-        if (!renderRepos(repos)) projectGrid.innerHTML = staticMarkup;
+        if (!renderRepos(repos)) showEmptyState();
       })
       .catch(function () {
-        // Keep whatever static list is already baked into the HTML.
-        projectGrid.innerHTML = staticMarkup;
+        // Never fall back to a hardcoded list — it can go stale and
+        // resurrect projects that were since unpinned or deleted.
+        showEmptyState();
       });
   }
 
