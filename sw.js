@@ -1,6 +1,6 @@
 // Minimal offline-first service worker for the static profile site.
 // Bump CACHE_NAME whenever the cached file list changes to force a refresh.
-const CACHE_NAME = 'ali-site-v1';
+const CACHE_NAME = 'ali-site-v2';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -39,8 +39,10 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
-  // Network-first for the GitHub API so the project list stays fresh when online.
-  if (request.url.indexOf('api.github.com') !== -1) {
+  // Network-first for the generated projects list (and the old GitHub
+  // API path, kept here in case anything still references it) so the
+  // project order/content stays fresh whenever the pins change.
+  if (request.url.indexOf('projects.json') !== -1 || request.url.indexOf('api.github.com') !== -1) {
     event.respondWith(
       fetch(request).catch(() => caches.match(request))
     );

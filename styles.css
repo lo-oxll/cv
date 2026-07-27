@@ -664,8 +664,8 @@ h1 {
    Projects — GitHub repo grid
    ============================================ */
 .project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-bottom: var(--space-3);
 }
