@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "name": "lo_oxll",
+    "description": "المستودع الرئيسي — نظام إدارة المخازن والحسابات (Supabase + JavaScript)",
+    "language": "JavaScript",
+    "homepage": "https://lo-oxll.github.io/",
+    "html_url": "https://github.com/lo-oxll/lo_oxll",
+    "has_pages": true
+  },
+  {
+    "name": "lo_oxl",
+    "description": null,
+    "language": null,
+    "homepage": "https://lo-oxll.github.io/lo_oxl/",
+    "html_url": "https://github.com/lo-oxll/lo_oxl",
+    "has_pages": true
+  },
+  {
+    "name": "QR_code",
+    "description": "QR STORE — علامة عراقية تدمج التقنية بالحرفية (تطريز، قص ليزر، طباعة مطاطية)",
+    "language": "HTML",
+    "homepage": "https://lo-oxll.github.io/QR_code/",
+    "html_url": "https://github.com/lo-oxll/QR_code",
+    "has_pages": true
+  },
+  {
+    "name": "gissa-web",
+    "description": "قصّة (Qissa) — متجر إلكتروني عربي لمنتجات العناية بالجسم",
+    "language": "JavaScript",
+    "homepage": "https://lo-oxll.github.io/gissa-web/",
+    "html_url": "https://github.com/lo-oxll/gissa-web",
+    "has_pages": true
+  },
+  {
+    "name": "nomoor",
+    "description": null,
+    "language": null,
+    "homepage": "https://lo-oxll.github.io/nomoor/",
+    "html_url": "https://github.com/lo-oxll/nomoor",
+    "has_pages": true
+  },
+  {
+    "name": "Biocontrol",
+    "description": "رَصَد (Rasad) — منصة مجتمعية للإبلاغ عن الأنواع الغازية في العراق",
+    "language": "JavaScript",
+    "homepage": "https://lo-oxll.github.io/Biocontrol/",
+    "html_url": "https://github.com/lo-oxll/Biocontrol",
+    "has_pages": true
+  },
+  {
+    "name": "police_martyrs_press",
+    "description": null,
+    "language": null,
+    "homepage": "https://lo-oxll.github.io/police_martyrs_press/",
+    "html_url": "https://github.com/lo-oxll/police_martyrs_press",
+    "has_pages": true
+  },
+  {
+    "name": "Inventory_Control_Accountant_2",
+    "description": "نظام إدارة المخازن والحسابات — نسخة تجريبية 2",
+    "language": "JavaScript",
+    "homepage": "https://lo-oxll.github.io/Inventory_Control_Accountant_2/",
+    "html_url": "https://github.com/lo-oxll/Inventory_Control_Accountant_2",
+    "has_pages": true
+  }
+]
